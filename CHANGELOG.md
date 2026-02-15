@@ -1,3 +1,15 @@
+## [1.0.8] - 2026-02-15
+
+### Summary
+
+chore(benchmarks): deep code analysis engine with 3 supporting modules
+
+### Other
+
+- update benchmark_summary.json
+- update benchmarks/code2logic/results.json
+
+
 ## [1.0.7] - 2026-02-15
 
 ### Summary
