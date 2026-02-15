@@ -17,6 +17,7 @@ from benchmarks.common import (
     evaluate_response_quality,
     get_target_project,
     read_all_source_files,
+    save_llm_artifacts,
     save_result,
 )
 
@@ -38,6 +39,16 @@ def run_benchmark() -> BenchmarkResult:
     )
 
     llm_result = call_llm(prompt, system=ANALYSIS_SYSTEM_PROMPT)
+
+    save_llm_artifacts(
+        Path(__file__).parent,
+        stage="benchmark",
+        system_prompt=ANALYSIS_SYSTEM_PROMPT,
+        prompt=prompt,
+        context=context,
+        llm_result=llm_result,
+        extra={"tool": "baseline"},
+    )
 
     total_duration = time.time() - total_start
 

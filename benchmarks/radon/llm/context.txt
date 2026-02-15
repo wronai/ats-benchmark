@@ -1,0 +1,34 @@
+# Radon Complexity Analysis
+
+## Cyclomatic Complexity (CC)
+
+## Maintainability Index (MI)
+
+### Low Maintainability (12 files)
+  - /project/app/config.py: MI=0.0 (rank=C)
+  - /project/app/logging_pipeline.py: MI=0.0 (rank=C)
+  - /project/app/analytics.py: MI=0.0 (rank=C)
+  - /project/app/recommendations.py: MI=0.0 (rank=C)
+  - /project/app/auth.py: MI=0.0 (rank=C)
+  - /project/app/payments.py: MI=0.0 (rank=C)
+  - /project/app/api.py: MI=0.0 (rank=C)
+  - /project/app/inventory.py: MI=0.0 (rank=C)
+  - /project/app/etl.py: MI=0.0 (rank=C)
+  - /project/app/orders.py: MI=0.0 (rank=C)
+
+## Raw Metrics Summary
+  Total LOC: 80486
+  Source LOC: 56227
+  Comments: 10692
+  Comment ratio: 13.3%
+
+### Largest Files (by SLOC)
+  - /project/app/config.py: 4684 SLOC
+  - /project/app/logging_pipeline.py: 4684 SLOC
+  - /project/app/analytics.py: 4684 SLOC
+  - /project/app/recommendations.py: 4684 SLOC
+  - /project/app/auth.py: 4684 SLOC
+
+## Halstead Metrics (Sample)
+  Average difficulty: 1.4
+  Functions analyzed: 30

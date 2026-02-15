@@ -1,0 +1,148 @@
+# Call Graph Analysis
+## Nodes (200 functions/classes)
+
+### __root__
+  - NotImplementedError
+  - Thread
+  - append
+  - eval
+  - execute
+  - fetchall
+  - fn
+  - get
+  - int
+  - join
+  - len
+  - loads
+  - range
+  - replace
+  - start
+  - str
+  - sum
+  - update
+
+### app.analytics
+  - generated_rule_0
+  - generated_rule_1
+  - generated_rule_10
+  - generated_rule_100
+  - generated_rule_101
+  - generated_rule_102
+  - generated_rule_103
+  - generated_rule_104
+  - generated_rule_105
+  - generated_rule_106
+  - generated_rule_107
+  - generated_rule_108
+  - generated_rule_109
+  - generated_rule_11
+  - generated_rule_110
+  - generated_rule_111
+  - generated_rule_112
+  - generated_rule_113
+  - generated_rule_114
+  - generated_rule_115
+  ... and 162 more
+
+## Call Edges (1274 relationships)
+  app.analytics.generated_rule_0 -> get
+  app.analytics.generated_rule_0 -> int
+  app.analytics.generated_rule_0 -> int
+  app.analytics.generated_rule_0 -> get
+  app.analytics.generated_rule_0 -> get
+  app.analytics.generated_rule_0 -> get
+  app.analytics.generated_rule_0 -> str
+  app.analytics.generated_rule_1 -> get
+  app.analytics.generated_rule_1 -> int
+  app.analytics.generated_rule_1 -> int
+  app.analytics.generated_rule_1 -> get
+  app.analytics.generated_rule_1 -> get
+  app.analytics.generated_rule_1 -> get
+  app.analytics.generated_rule_1 -> str
+  app.analytics.generated_rule_2 -> get
+  app.analytics.generated_rule_2 -> int
+  app.analytics.generated_rule_2 -> int
+  app.analytics.generated_rule_2 -> get
+  app.analytics.generated_rule_2 -> get
+  app.analytics.generated_rule_2 -> get
+  app.analytics.generated_rule_2 -> str
+  app.analytics.generated_rule_3 -> get
+  app.analytics.generated_rule_3 -> int
+  app.analytics.generated_rule_3 -> int
+  app.analytics.generated_rule_3 -> get
+  app.analytics.generated_rule_3 -> get
+  app.analytics.generated_rule_3 -> get
+  app.analytics.generated_rule_3 -> str
+  app.analytics.generated_rule_4 -> get
+  app.analytics.generated_rule_4 -> int
+  app.analytics.generated_rule_4 -> int
+  app.analytics.generated_rule_4 -> get
+  app.analytics.generated_rule_4 -> get
+  app.analytics.generated_rule_4 -> get
+  app.analytics.generated_rule_4 -> str
+  app.analytics.generated_rule_5 -> get
+  app.analytics.generated_rule_5 -> int
+  app.analytics.generated_rule_5 -> int
+  app.analytics.generated_rule_5 -> get
+  app.analytics.generated_rule_5 -> get
+  app.analytics.generated_rule_5 -> get
+  app.analytics.generated_rule_5 -> str
+  app.analytics.generated_rule_6 -> get
+  app.analytics.generated_rule_6 -> int
+  app.analytics.generated_rule_6 -> int
+  app.analytics.generated_rule_6 -> get
+  app.analytics.generated_rule_6 -> get
+  app.analytics.generated_rule_6 -> get
+  app.analytics.generated_rule_6 -> str
+  app.analytics.generated_rule_7 -> get
+  app.analytics.generated_rule_7 -> int
+  app.analytics.generated_rule_7 -> int
+  app.analytics.generated_rule_7 -> get
+  app.analytics.generated_rule_7 -> get
+  app.analytics.generated_rule_7 -> get
+  app.analytics.generated_rule_7 -> str
+  app.analytics.generated_rule_8 -> get
+  app.analytics.generated_rule_8 -> int
+  app.analytics.generated_rule_8 -> int
+  app.analytics.generated_rule_8 -> get
+  app.analytics.generated_rule_8 -> get
+  app.analytics.generated_rule_8 -> get
+  app.analytics.generated_rule_8 -> str
+  app.analytics.generated_rule_9 -> get
+  app.analytics.generated_rule_9 -> int
+  app.analytics.generated_rule_9 -> int
+  app.analytics.generated_rule_9 -> get
+  app.analytics.generated_rule_9 -> get
+  app.analytics.generated_rule_9 -> get
+  app.analytics.generated_rule_9 -> str
+  app.analytics.generated_rule_10 -> get
+  app.analytics.generated_rule_10 -> int
+  app.analytics.generated_rule_10 -> int
+  app.analytics.generated_rule_10 -> get
+  app.analytics.generated_rule_10 -> get
+  app.analytics.generated_rule_10 -> get
+  app.analytics.generated_rule_10 -> str
+  app.analytics.generated_rule_11 -> get
+  app.analytics.generated_rule_11 -> int
+  app.analytics.generated_rule_11 -> int
+  app.analytics.generated_rule_11 -> get
+  app.analytics.generated_rule_11 -> get
+  app.analytics.generated_rule_11 -> get
+  app.analytics.generated_rule_11 -> str
+  app.analytics.generated_rule_12 -> get
+  app.analytics.generated_rule_12 -> int
+  app.analytics.generated_rule_12 -> int
+  app.analytics.generated_rule_12 -> get
+  app.analytics.generated_rule_12 -> get
+  app.analytics.generated_rule_12 -> get
+  app.analytics.generated_rule_12 -> str
+  app.analytics.generated_rule_13 -> get
+  app.analytics.generated_rule_13 -> int
+  app.analytics.generated_rule_13 -> int
+  app.analytics.generated_rule_13 -> get
+  app.analytics.generated_rule_13 -> get
+  app.analytics.generated_rule_13 -> get
+  app.analytics.generated_rule_13 -> str
+  app.analytics.generated_rule_14 -> get
+  app.analytics.generated_rule_14 -> int
+  ... and 1174 more edges

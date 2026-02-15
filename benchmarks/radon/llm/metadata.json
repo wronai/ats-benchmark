@@ -1,0 +1,17 @@
+{
+  "timestamp_utc": "2026-02-15T14:41:59.036166+00:00",
+  "stage": "benchmark",
+  "model": "openrouter/moonshotai/kimi-k2.5",
+  "target_project_env": "./test-broken-code",
+  "target_project_resolved": "/project",
+  "tokens_in": 458,
+  "tokens_out": 2553,
+  "duration_sec": 82.80193328857422,
+  "error": null,
+  "prompt_chars": 1138,
+  "context_chars": 1008,
+  "extra": {
+    "tool": "radon",
+    "method": "radon"
+  }
+}

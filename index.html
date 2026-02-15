@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ATS Benchmark — Index</title>
+  <style>
+    :root {
+      --bg: #f7f7f5;
+      --card: #ffffff;
+      --ink: #1e2430;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --accent: #0f766e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "JetBrains Mono", "Fira Code", monospace;
+      background: linear-gradient(160deg, #f8fafc 0%, #eef6f3 100%);
+      color: var(--ink);
+      line-height: 1.45;
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    h1, h2 { margin: 0 0 12px 0; }
+    p { margin: 0 0 12px 0; color: var(--muted); }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { color: #111827; }
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px dotted var(--accent);
+    }
+    a:hover { border-bottom-style: solid; }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 24px;
+    }
+    .chip {
+      display: inline-block;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 2px 10px;
+      font-size: 12px;
+      color: var(--muted);
+      margin-right: 6px;
+      margin-bottom: 6px;
+      background: #fcfcfc;
+    }
+    @media (max-width: 820px) {
+      .grid { grid-template-columns: 1fr; }
+      table { font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="card">
+      <h1>ATS Benchmark — Panel artefaktów</h1>
+      <p>
+        Strona indeksująca wyniki benchmarków, pliki komunikacji LLM oraz dokumentację narzędzi.
+      </p>
+      <div>
+        <span class="chip">TARGET_PROJECT=./test-broken-code</span>
+        <span class="chip">benchmarks/*/llm/{input,output,...}.txt</span>
+        <span class="chip">harmonogram: timeline.log</span>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Globalne pliki</h2>
+      <div class="grid">
+        <div><a href="./benchmark_summary.json">benchmark_summary.json</a></div>
+        <div><a href="./analyze_results.py">analyze_results.py</a></div>
+        <div><a href="./Makefile">Makefile</a></div>
+        <div><a href="./benchmarks/common.py">benchmarks/common.py</a></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Benchmarki i artefakty LLM</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Narzędzie</th>
+            <th>Opis + README</th>
+            <th>Wynik</th>
+            <th>LLM input/output</th>
+            <th>Harmonogram</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>code2logic</td>
+            <td><a href="./benchmarks/code2logic/README.md">README</a></td>
+            <td><a href="./benchmarks/code2logic/results.json">results.json</a></td>
+            <td>
+              <a href="./benchmarks/code2logic/llm/input.txt">input</a> |
+              <a href="./benchmarks/code2logic/llm/output.txt">output</a> |
+              <a href="./benchmarks/code2logic/llm/context.txt">context</a> |
+              <a href="./benchmarks/code2logic/llm/metadata.json">metadata</a>
+            </td>
+            <td><a href="./benchmarks/code2logic/llm/timeline.log">timeline.log</a></td>
+          </tr>
+          <tr>
+            <td>nfo</td>
+            <td><a href="./benchmarks/nfo/README.md">README</a></td>
+            <td><a href="./benchmarks/nfo/results.json">results.json</a></td>
+            <td>
+              <a href="./benchmarks/nfo/llm/input.txt">input</a> |
+              <a href="./benchmarks/nfo/llm/output.txt">output</a> |
+              <a href="./benchmarks/nfo/llm/context.txt">context</a> |
+              <a href="./benchmarks/nfo/llm/metadata.json">metadata</a>
+            </td>
+            <td><a href="./benchmarks/nfo/llm/timeline.log">timeline.log</a></td>
+          </tr>
+          <tr>
+            <td>baseline</td>
+            <td><a href="./benchmarks/baseline/README.md">README</a></td>
+            <td><a href="./benchmarks/baseline/results.json">results.json</a></td>
+            <td>
+              <a href="./benchmarks/baseline/llm/input.txt">input</a> |
+              <a href="./benchmarks/baseline/llm/output.txt">output</a> |
+              <a href="./benchmarks/baseline/llm/context.txt">context</a> |
+              <a href="./benchmarks/baseline/llm/metadata.json">metadata</a>
+            </td>
+            <td><a href="./benchmarks/baseline/llm/timeline.log">timeline.log</a></td>
+          </tr>
+          <tr>
+            <td>callgraph</td>
+            <td><a href="./benchmarks/callgraph/README.md">README</a></td>
+            <td><a href="./benchmarks/callgraph/results.json">results.json</a></td>
+            <td>
+              <a href="./benchmarks/callgraph/llm/input.txt">input</a> |
+              <a href="./benchmarks/callgraph/llm/output.txt">output</a> |
+              <a href="./benchmarks/callgraph/llm/context.txt">context</a> |
+              <a href="./benchmarks/callgraph/llm/metadata.json">metadata</a>
+            </td>
+            <td><a href="./benchmarks/callgraph/llm/timeline.log">timeline.log</a></td>
+          </tr>
+          <tr>
+            <td>treesitter</td>
+            <td><a href="./benchmarks/treesitter/README.md">README</a></td>
+            <td><a href="./benchmarks/treesitter/results.json">results.json</a></td>
+            <td>
+              <a href="./benchmarks/treesitter/llm/input.txt">input</a> |
+              <a href="./benchmarks/treesitter/llm/output.txt">output</a> |
+              <a href="./benchmarks/treesitter/llm/context.txt">context</a> |
+              <a href="./benchmarks/treesitter/llm/metadata.json">metadata</a>
+            </td>
+            <td><a href="./benchmarks/treesitter/llm/timeline.log">timeline.log</a></td>
+          </tr>
+          <tr>
+            <td>ast-grep</td>
+            <td><a href="./benchmarks/astgrep/README.md">README</a></td>
+            <td><a href="./benchmarks/astgrep/results.json">results.json</a></td>
+            <td>
+              <a href="./benchmarks/astgrep/llm/input.txt">input</a> |
+              <a href="./benchmarks/astgrep/llm/output.txt">output</a> |
+              <a href="./benchmarks/astgrep/llm/context.txt">context</a> |
+              <a href="./benchmarks/astgrep/llm/metadata.json">metadata</a>
+            </td>
+            <td><a href="./benchmarks/astgrep/llm/timeline.log">timeline.log</a></td>
+          </tr>
+          <tr>
+            <td>radon</td>
+            <td><a href="./benchmarks/radon/README.md">README</a></td>
+            <td><a href="./benchmarks/radon/results.json">results.json</a></td>
+            <td>
+              <a href="./benchmarks/radon/llm/input.txt">input</a> |
+              <a href="./benchmarks/radon/llm/output.txt">output</a> |
+              <a href="./benchmarks/radon/llm/context.txt">context</a> |
+              <a href="./benchmarks/radon/llm/metadata.json">metadata</a>
+            </td>
+            <td><a href="./benchmarks/radon/llm/timeline.log">timeline.log</a></td>
+          </tr>
+          <tr>
+            <td>bandit</td>
+            <td><a href="./benchmarks/bandit/README.md">README</a></td>
+            <td><a href="./benchmarks/bandit/results.json">results.json</a></td>
+            <td>
+              <a href="./benchmarks/bandit/llm/input.txt">input</a> |
+              <a href="./benchmarks/bandit/llm/output.txt">output</a> |
+              <a href="./benchmarks/bandit/llm/context.txt">context</a> |
+              <a href="./benchmarks/bandit/llm/metadata.json">metadata</a>
+            </td>
+            <td><a href="./benchmarks/bandit/llm/timeline.log">timeline.log</a></td>
+          </tr>
+          <tr>
+            <td>repair</td>
+            <td><a href="./benchmarks/repair/README.md">README</a></td>
+            <td><a href="./benchmarks/repair/code2logic/repair_result.json">repair_result.json (example)</a></td>
+            <td>
+              <a href="./benchmarks/repair/code2logic/llm/input.txt">input</a> |
+              <a href="./benchmarks/repair/code2logic/llm/output.txt">output</a> |
+              <a href="./benchmarks/repair/code2logic/llm/context.txt">context</a> |
+              <a href="./benchmarks/repair/code2logic/llm/metadata.json">metadata</a>
+            </td>
+            <td><a href="./benchmarks/repair/code2logic/llm/timeline.log">timeline.log</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <h2>Szybkie komendy</h2>
+      <pre>make benchmark-all
+make repair
+make results</pre>
+    </section>
+  </main>
+</body>
+</html>

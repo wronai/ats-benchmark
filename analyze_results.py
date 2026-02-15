@@ -42,6 +42,29 @@ def load_results() -> List[Dict[str, Any]]:
     return results
 
 
+def filter_repairs_for_benchmark_targets(
+    repairs: List[Dict[str, Any]],
+    benchmarks: List[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    """Keep only repair results that match the current benchmark target(s)."""
+    if not repairs or not benchmarks:
+        return repairs
+
+    benchmark_targets = {
+        str(item.get("target_project", "")).strip()
+        for item in benchmarks
+        if str(item.get("target_project", "")).strip()
+    }
+    if not benchmark_targets:
+        return repairs
+
+    filtered = [
+        item for item in repairs
+        if str(item.get("target_project", "")).strip() in benchmark_targets
+    ]
+    return filtered
+
+
 def load_repair_results() -> List[Dict[str, Any]]:
     """Load repair_result.json from each repair directory."""
     results = []
@@ -238,7 +261,7 @@ def main():
     results = load_results()
     print_comparison_table(results)
 
-    repairs = load_repair_results()
+    repairs = filter_repairs_for_benchmark_targets(load_repair_results(), results)
     print_repair_table(repairs)
 
     all_data = results + repairs

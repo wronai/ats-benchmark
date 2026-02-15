@@ -1,0 +1,99 @@
+ Code Review: `app/analytics.py` & `app/__init__.py`
+
+## 1. Critical Security Vulnerabilities
+
+**`unsafe_sql_lookup(conn, table, user_input)`** (Line ~15)
+- **SQL Injection**: Both `table` and `user_input` are interpolated directly into the query string without parameterization. Attackers can inject SQL via either parameter (e.g., `user_input="'; DROP TABLE users; --"`).
+- **Fix**: Use parameterized queries: `conn.execute("SELECT * FROM ? WHERE name = ?", (table, user_input))`.
+
+**`insecure_eval(expression)`** (Line ~19)
+- **Arbitrary Code Execution**: `eval()` executes arbitrary Python code. This is a critical RCE vulnerability.
+- **Fix**: Replace with `ast.literal_eval()` for literals, or implement a safe math parser (e.g., `simpleeval`).
+
+**Hardcoded Secrets** (All `generated_rule_*` functions, Lines ~50+)
+- 200+ functions contain hardcoded secrets (`secret = "hardcoded-secret-N"`). These are rotated through a small set of 17 values (0-16) but exposed in source code.
+- **Fix**: Use environment variables or a secrets manager (e.g., `os.environ.get("SECRET")`).
+
+## 2. Logic Errors & Data Flow Issues
+
+**`broken_average(values)`** (Line ~35)
+- **Off-by-one Error**: Divides by `len(values) - 1` instead of `len(values)`. Crashes with `ZeroDivisionError` when passed a single element list.
+- **Fix**: Change to `len(values)` and handle empty list edge case.
+
+**`accumulate(values, acc=[])`** (Line ~31)
+- **Mutable Default Argument**: The default `acc=[]` is evaluated once at import time, causing state leakage between calls.
+- **Fix**: Use `acc=None` and initialize inside function.
+
+**`parse_payload(raw)`** (Line ~23)
+- **Data Corruption**: Blindly replaces single quotes with double quotes before JSON parsing, corrupting valid JSON strings containing apostrophes (e.g., `"name": "O'Brien"` becomes invalid JSON).
+- **Fix**: Remove the replacement; handle JSON parsing properly with error handling.
+
+**`generated_rule_*` functions** (Lines ~50 to end)
+- **Division by Zero**: `ratio = amount / (count - 1)` crashes when `count=1`.
+- **Silent Data Corruption**: Broad `except Exception` catches `ZeroDivisionError`, `ValueError`, etc., and silently sets `ratio = 0`, masking input errors.
+- **Inconsistent Return Contract**: Functions return different dictionary structures based on ratio values:
+  - `ratio > 1000`: returns `{'status': 'ok', ...}`
+  - `ratio < 0`: returns `{'error': 'negative ratio', ...}`
+  - Else: returns `{'ratio': ..., 'meta': ...}`
+  - This makes API contract validation impossible for consumers.
+
+**`flaky_retry(fn, attempts=3)`** (Line ~39)
+- **Silent Failure**: Returns `None` after exhausting retries, giving callers no indication of failure type or whether the operation succeeded.
+- **Fix**: Re-raise the last exception or return a Result/Error object.
+
+**`mutate_shared_profile(profile, patch)`** (Line ~43)
+- **Unexpected Mutation**: Mutates the input `profile` dict in-place via `.update()`, causing side effects for callers who may still reference the original.
+- **Fix**: Return a copy: `return {**profile, **patch}` or `profile.copy().update(patch)`.
+
+## 3. Concurrency & State Management Issues
+
+**`non_atomic_increment(n=1000)`** (Line ~47)
+- **Race Condition**: `GLOBAL_COUNTER += 1` is not thread-safe. With 5 threads performing 1000 increments each, the final result will be less than 5000 due to lost updates.
+- **Fix**: Use `threading.Lock()` or `queue.Queue` for synchronization, or use `multiprocessing.Value` with proper locking.
+
+**`GLOBAL_CACHE`** (Module level, Line ~12)
+- **Memory Leak**: All `generated_rule_*` functions write to this global dict with no eviction policy. Keys use `trace_id` which may be unbounded, leading to unbounded memory growth.
+- **Thread Safety**: Concurrent access to this global dict from multiple threads is not synchronized.
+
+**`async_fetch_with_blocking_sleep(seconds)`** (Line ~27)
+- **Event Loop Blocking**: Uses `time.sleep()` inside an async function, blocking the entire event loop. The subsequent `await asyncio.sleep(0)` does not mitigate this.
+- **Fix**: Use `await asyncio.sleep(seconds)`.
+
+## 4. Refactoring Opportunities (High Priority)
+
+**Massive Code Duplication** (`generated_rule_0` through `generated_rule_219`)
+- **Issue**: 220 nearly identical functions (100k+ chars of duplication). Only differences are the hardcoded secret index and the rule number in the docstring/cache key.
+- **Refactor**: Replace with a single parameterized function:
+```python
+def apply_rule(payload: dict, rule_id: int, secret: str, cache: dict | None = None) -> dict:
+    if cache is None:
+        cache = {}
+    # ... implementation
+```
+
+**BrokenService Class**
+- **`compute_score`**: No validation for missing keys (`'weight'`, `'value'`) or empty `rows` list (ZeroDivisionError).
+- **`load_required_mapping`**: Raises `NotImplementedError` but is called in production code paths (implied by comment "Placeholder to force repair output").
+
+**Module Structure**
+- **`app/__init__.py`**: Imports `BrokenService` from `.orders`, but `BrokenService` is defined in `analytics.py`. This will cause `ImportError` unless `orders.py` exists and also defines it, suggesting circular import risks or module organization issues.
+
+## 5. Performance Issues
+
+**Global Cache Pollution**
+- The `cache` parameter default (`={}`) in all `generated_rule_*` functions creates new dict instances that are immediately populated but never cleaned up when used as default arguments.
+
+**String Truncation**
+- `str(payload)[:200]` in generated rules creates string representations of potentially large objects just to truncate them. Consider using `json.dumps(payload)[:200]` or proper serialization.
+
+**Import Overhead**
+- Importing this module is expensive due to 220+ function definitions. Consider lazy loading or class-based architecture.
+
+## Summary of Critical Fixes Required
+
+1. **Immediate**: Remove `eval()` and fix SQL injection.
+2. **High**: Fix race condition in `non_atomic_increment` with proper locking.
+3. **High**: Replace 220 duplicated functions with a single parameterized implementation.
+4. **Medium**: Fix mutable default arguments across all functions.
+5. **Medium**: Add input validation and consistent error handling in `generated_rule_*` replacements.
+6. **Low**: Move secrets to environment variables.

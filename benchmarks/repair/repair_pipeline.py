@@ -19,6 +19,7 @@ from benchmarks.common import (
     get_problem_description,
     get_target_project,
     read_all_source_files,
+    save_llm_artifacts,
     save_repair_result,
 )
 
@@ -219,6 +220,35 @@ def run_repair(tool: str = "code2logic") -> RepairResult:
     # Call LLM
     print(f"[repair/{tool}] Calling LLM ({__import__('os').getenv('MODEL_ID', '?')})...")
     llm_result = call_llm(prompt, system=REPAIR_SYSTEM_PROMPT)
+
+    save_llm_artifacts(
+        Path(__file__).parent / tool,
+        stage=f"repair/{tool}",
+        system_prompt=REPAIR_SYSTEM_PROMPT,
+        prompt=prompt,
+        context=context,
+        llm_result=llm_result,
+        extra={
+            "tool": tool,
+            "problem": problem,
+            "raw_code_chars": raw_chars,
+        },
+    )
+
+    # Aggregate latest repair exchange also at benchmarks/repair/llm
+    save_llm_artifacts(
+        Path(__file__).parent,
+        stage=f"repair/{tool}",
+        system_prompt=REPAIR_SYSTEM_PROMPT,
+        prompt=prompt,
+        context=context,
+        llm_result=llm_result,
+        extra={
+            "tool": tool,
+            "problem": problem,
+            "raw_code_chars": raw_chars,
+        },
+    )
 
     if llm_result["error"]:
         return RepairResult(

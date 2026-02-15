@@ -1,0 +1,12 @@
+{
+  "tool": "nfo",
+  "target_project": "/project",
+  "problem": "Brak parsera logów do data flow - LogFlowParser nie istnieje, brak grupowania po trace_id, brak kompresji logów do grafu dla LLM",
+  "diagnosis": "```json\n{\n  \"diagnosis\": \"The codebase lacks a LogFlowParser class needed for distributed tracing analysis. The missing component should parse structured logs, group entries by trace_id to reconstruct request flows, and compress these flows into a compact graph representation suitable for LLM consumption. This is essential for debugging and analyzing data flow across microservices.\",\n  \"fixed_files\": {\n    \"app/log_flow_parser.py\": \"\\\"\\\"\\\"LogFlowParser - Parser for distributed tracing logs with LLM-optimized graph compression.\\\"\\\"\\\"\\n\\nfrom __future__ import annotations\\n\\nimport json\\nfrom collections import defaultdict\\nfrom dataclasses import dataclass, field\\nfrom datetime import datetime\\nfrom typing import Any, Dict, List, Optional, Set, Tuple\\n\\n\\n@dataclass\\nclass LogEntry:\\n    \\\"\\\"\\\"Represents a single log entry in a distributed system.\\\"\\\"\\\"\\n    timestamp: str\\n    service: str\\n    trace_id: str\\n    span_id: str\\n    parent_span_id: Optional[str] = None\\n    message: str = \\\"\\\"\\n    level: str = \\\"INFO\\\"\\n    metadata: Dict[str, Any] = field(default_factory=dict)\\n\\n\\n@dataclass\\nclass FlowNode:\\n    \\\"\\\"\\\"Node in the flow graph representing a service call.\\\"\\\"\\\"\\n    span_id: str\\n    service: str\\n    timestamp: str\\n    message: str\\n    level: str\\n    duration_ms: Optional[float] = None\\n    children: List[FlowNode] = field(default_factory=list)\\n\\n\\nclass LogFlowParser:\\n    \\\"\\\"\\\"Parser for log data flow analysis with trace grouping and LLM compression.\\\"\\\"\\\"\\n    \\n    def __init__(self):\\n        self.traces: Dict[str, List[LogEntry]] = defaultdict(list)\\n        self._span_index: Dict[str, LogEntry] = {}\\n    \\n    def parse_log_line(self, line: str) -> Optional[LogEntry]:\\n        \\\"\\\"\\\"Parse a single JSON log line into LogEntry.\\\"\\\"\\\"\\n        try:\\n            data = json.loads(line)\\n            return LogEntry(\\n                timestamp=data.get(\\\"timestamp\\\", \\\"\\\"),\\n                service=data.get(\\\"service\\\", \\\"unknown\\\"),\\n        ",
+  "fixed_files": {},
+  "test_code": "",
+  "tokens_in": 39325,
+  "tokens_out": 7417,
+  "duration_sec": 305.62622117996216,
+  "error": null
+}

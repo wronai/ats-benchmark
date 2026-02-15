@@ -1,0 +1,37 @@
+Analyze this bandit (security analysis) representation of a project.
+Find bugs, data flow issues, and refactoring opportunities.
+
+# Bandit Security Analysis
+
+## MEDIUM Severity Issues (24)
+  - /project/app/analytics.py:22 [hardcoded_sql_expressions] Possible SQL injection vector through string-based query construction.
+  - /project/app/analytics.py:28 [blacklist] Use of possibly insecure function - consider using safer ast.literal_eval.
+  - /project/app/api.py:22 [hardcoded_sql_expressions] Possible SQL injection vector through string-based query construction.
+  - /project/app/api.py:28 [blacklist] Use of possibly insecure function - consider using safer ast.literal_eval.
+  - /project/app/auth.py:22 [hardcoded_sql_expressions] Possible SQL injection vector through string-based query construction.
+  - /project/app/auth.py:28 [blacklist] Use of possibly insecure function - consider using safer ast.literal_eval.
+  - /project/app/config.py:22 [hardcoded_sql_expressions] Possible SQL injection vector through string-based query construction.
+  - /project/app/config.py:28 [blacklist] Use of possibly insecure function - consider using safer ast.literal_eval.
+  - /project/app/db.py:22 [hardcoded_sql_expressions] Possible SQL injection vector through string-based query construction.
+  - /project/app/db.py:28 [blacklist] Use of possibly insecure function - consider using safer ast.literal_eval.
+  ... and 14 more
+
+## Issue Categories
+  - hardcoded_sql_expressions: 12 occurrences
+  - blacklist: 12 occurrences
+
+## Security Metrics
+  Files scanned: 0
+  Lines scanned: 58892
+  SEVERE (High): 0
+  CONFIDENCE.HIGH: 26
+
+## High Confidence Issues (12)
+  - /project/app/analytics.py:28 [blacklist]
+  - /project/app/api.py:28 [blacklist]
+  - /project/app/auth.py:28 [blacklist]
+  - /project/app/config.py:28 [blacklist]
+  - /project/app/db.py:28 [blacklist]
+  - /project/app/etl.py:28 [blacklist]
+  - /project/app/inventory.py:28 [blacklist]
+  - /project/app/logging_pipeline.py:28 [blacklist]

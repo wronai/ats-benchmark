@@ -1,0 +1,69 @@
+# ast-grep Structural Analysis
+
+## Functions (38 found)
+  - /project/tests/test_regressions.py:5 (NAME=test_broken_average_single_value, PARAMS=, BODY=with pytest.raises(ZeroDivisionError):
+        broken_average([1.0]))
+  - /project/tests/test_regressions.py:10 (NAME=test_accumulate_should_not_leak_state, BODY=first = accumulate([1, 2])
+    second = accumulate([3])
+    assert first == [1, 2]
+    assert second == [3], PARAMS=)
+  - /project/app/api.py:55 (NAME=flaky_retry, BODY=# BUG: swallows all errors and returns None silently., PARAMS=fn)
+  - /project/app/api.py:75 (NAME=worker, PARAMS=, BODY=global GLOBAL_COUNTER
+        for _ in range(n):
+            GLOBAL_COUNTER += 1)
+  - /project/app/api.py:89 (NAME=__init__, PARAMS=self, BODY=self.name = name
+        self.cache = {}
+        self.last_error = None)
+  - /project/app/utils.py:55 (NAME=flaky_retry, PARAMS=fn, BODY=# BUG: swallows all errors and returns None silently.)
+  - /project/app/utils.py:75 (NAME=worker, BODY=global GLOBAL_COUNTER
+        for _ in range(n):
+            GLOBAL_COUNTER += 1, PARAMS=)
+  - /project/app/utils.py:89 (NAME=__init__, PARAMS=self, BODY=self.name = name
+        self.cache = {}
+        self.last_error = None)
+  - /project/app/db.py:55 (NAME=flaky_retry, BODY=# BUG: swallows all errors and returns None silently., PARAMS=fn)
+  - /project/app/db.py:75 (NAME=worker, PARAMS=, BODY=global GLOBAL_COUNTER
+        for _ in range(n):
+            GLOBAL_COUNTER += 1)
+  - /project/app/db.py:89 (NAME=__init__, PARAMS=self, BODY=self.name = name
+        self.cache = {}
+        self.last_error = None)
+  - /project/app/inventory.py:55 (NAME=flaky_retry, PARAMS=fn, BODY=# BUG: swallows all errors and returns None silently.)
+  - /project/app/inventory.py:75 (NAME=worker, BODY=global GLOBAL_COUNTER
+        for _ in range(n):
+            GLOBAL_COUNTER += 1, PARAMS=)
+  - /project/app/inventory.py:89 (NAME=__init__, PARAMS=self, BODY=self.name = name
+        self.cache = {}
+        self.last_error = None)
+  - /project/app/recommendations.py:55 (NAME=flaky_retry, PARAMS=fn, BODY=# BUG: swallows all errors and returns None silently.)
+  - /project/app/recommendations.py:75 (NAME=worker, PARAMS=, BODY=global GLOBAL_COUNTER
+        for _ in range(n):
+            GLOBAL_COUNTER += 1)
+  - /project/app/recommendations.py:89 (NAME=__init__, BODY=self.name = name
+        self.cache = {}
+        self.last_error = None, PARAMS=self)
+  - /project/app/etl.py:55 (NAME=flaky_retry, BODY=# BUG: swallows all errors and returns None silently., PARAMS=fn)
+  - /project/app/etl.py:75 (NAME=worker, BODY=global GLOBAL_COUNTER
+        for _ in range(n):
+            GLOBAL_COUNTER += 1, PARAMS=)
+  - /project/app/etl.py:89 (NAME=__init__, PARAMS=self, BODY=self.name = name
+        self.cache = {}
+        self.last_error = None)
+  ... and 18 more
+
+## List Comprehensions (12 found)
+  - /project/app/orders.py:80 (ITEM=threading.Thread(target=worker), ITER=range(5), VAR=_)
+  - /project/app/analytics.py:80 (ITEM=threading.Thread(target=worker), VAR=_, ITER=range(5))
+  - /project/app/db.py:80 (VAR=_, ITEM=threading.Thread(target=worker), ITER=range(5))
+  - /project/app/logging_pipeline.py:80 (ITER=range(5), VAR=_, ITEM=threading.Thread(target=worker))
+  - /project/app/auth.py:80 (ITER=range(5), VAR=_, ITEM=threading.Thread(target=worker))
+  - /project/app/payments.py:80 (VAR=_, ITER=range(5), ITEM=threading.Thread(target=worker))
+  - /project/app/inventory.py:80 (ITEM=threading.Thread(target=worker), ITER=range(5), VAR=_)
+  - /project/app/recommendations.py:80 (ITER=range(5), ITEM=threading.Thread(target=worker), VAR=_)
+  - /project/app/api.py:80 (VAR=_, ITER=range(5), ITEM=threading.Thread(target=worker))
+  - /project/app/etl.py:80 (VAR=_, ITER=range(5), ITEM=threading.Thread(target=worker))
+  - /project/app/config.py:80 (ITER=range(5), ITEM=threading.Thread(target=worker), VAR=_)
+  - /project/app/utils.py:80 (VAR=_, ITER=range(5), ITEM=threading.Thread(target=worker))
+
+## Security Patterns
+  Eval Usage: 12 occurrences

@@ -1,3 +1,36 @@
+## [1.0.9] - 2026-02-15
+
+### Summary
+
+refactor(docs): deep code analysis engine with 7 supporting modules
+
+### Docs
+
+- docs: update README
+- docs: update README
+- docs: update README
+- docs: update README
+- docs: update README
+- docs: update README
+- docs: update README
+- docs: update README
+- docs: update README
+
+### Other
+
+- update analyze_results.py
+- update benchmark_summary.json
+- update benchmarks/astgrep/benchmark.py
+- update benchmarks/astgrep/llm/context.txt
+- update benchmarks/astgrep/llm/input.txt
+- update benchmarks/astgrep/llm/metadata.json
+- update benchmarks/astgrep/llm/output.txt
+- update benchmarks/astgrep/llm/system.txt
+- update benchmarks/astgrep/results.json
+- update benchmarks/bandit/benchmark.py
+- ... and 76 more
+
+
 ## [1.0.8] - 2026-02-15
 
 ### Summary

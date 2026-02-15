@@ -1,20 +1,20 @@
 {
   "tool": "callgraph",
   "target_project": "/project",
-  "tokens_in": 236,
-  "tokens_out": 1896,
-  "duration_analysis_sec": 0.2915370464324951,
-  "duration_llm_sec": 115.60691404342651,
-  "duration_total_sec": 115.9506413936615,
-  "context_chars": 502,
-  "raw_code_chars": 373650,
-  "compression_ratio": 0.9986564967215309,
-  "llm_response": " Based on this static call graph, I've identified several critical architectural and testing issues. The **zero call edges** between 6 nodes is a major red flag indicating potential integration failures or analysis gaps.\n\n## 1. Critical Integration Bugs\n\n### Test-Implementation Disconnect\n**Issue**: Test classes (`TestPipelineSinkBasic`, `TestPipelineSinkMultipleRuns`) show no calls to `PipelineSink` implementation.\n- **Risk**: Tests may be using heavy mocking or not testing actual implementation (false confidence)\n- **Action**: Verify if `test_complete_marker_flushes_run` actually invokes `PipelineSink._flush_run` or merely mocks it. If mocking, this is a behavior verification anti-pattern.\n\n### Orphaned Implementation\n**Issue**: `PipelineSink` has methods `_flush_run` (private) and `pending_runs`, but zero incoming calls.\n- **Risk**: Dead code or incomplete integration\n- **Action**: Check if `PipelineSink` is actually instantiated in the codebase or if it's an unfinished abstraction\n\n## 2. Data Flow Issues\n\n### Buffer Management (Potential Memory Leak)\n**Location**: `nfo.pipeline_sink.PipelineSink._flush_run`\n**Issue**: \"Flush\" semantics suggest buffered data accumulation, but no visible \"add\" or \"append\" methods in the graph.\n- **Risk**: Unbounded growth of `pending_runs` if flush conditions aren't met\n- **Missing**: No visible error handling for flush failures (retry logic, partial flush states)\n\n### State Visibility\n**Location**: `PipelineSink.pending_runs`\n**Issue**: Exposing internal pending state without synchronization primitives visible.\n- **Risk**: Race conditions if multiple threads/coroutines access pending runs during flush\n- **Action**: Verify if `pending_runs` is property-guarded or if direct access allows modification during iteration\n\n## 3. Refactoring Opportunities\n\n### Private Method Testing Anti-Pattern\n**Issue**: Tests likely accessing `_flush_run` (private by convention) directly or via reflection.\n```python\n# Current (likely):\nsink._flush_run...",
-  "llm_quality_keywords": 19,
+  "tokens_in": 1470,
+  "tokens_out": 2112,
+  "duration_analysis_sec": 2.0507774353027344,
+  "duration_llm_sec": 52.56457185745239,
+  "duration_total_sec": 54.61926245689392,
+  "context_chars": 4841,
+  "raw_code_chars": 2790515,
+  "compression_ratio": 0.9982651947758747,
+  "llm_response": "Based on this callgraph analysis, I've identified several critical issues, primarily centered around **massive code duplication** and **unsafe data handling patterns**.\n\n## 1. Critical Refactoring Opportunity: Generated Code Bloat\n\n**Issue**: The `app.analytics` module contains 200+ functions (`generated_rule_0` through `generated_rule_115+`) with **identical call signatures and structures**.\n\n**Evidence**: Every function follows the exact pattern:\n```\nget → int → int → get → get → get → str\n```\n\n**Problems**:\n- **Severe DRY violation**: Logic duplicated 200 times\n- **Memory bloat**: 200+ function objects vs. 1 parameterized function\n- **Maintenance nightmare**: Bug fixes require editing 200 locations\n- **Debuggability**: Numeric function names provide zero semantic context\n\n**Recommendation**:\nReplace with a data-driven rule engine:\n```python\n# Instead of 200 functions\nRULES = [\n    {'id': 0, 'int_fields': ['field1', 'field2'], 'str_fields': ['field3'], ...},\n    {'id': 1, 'int_fields': [...], ...},\n]\n\ndef execute_rule(rule_id, data):\n    rule = RULES[rule_id]\n    # Single implementation with validation\n```\n\n## 2. Data Flow Issues: Unsafe Type Conversions\n\n**Issue**: Unvalidated `int()` conversions in every `generated_rule_X` function.\n\n**Evidence**: Each rule calls `int` twice without preceding validation calls.\n\n**Potential Bugs**:\n- `int(None)` → `TypeError`\n- `int(\"\")` or `int(\"abc\")` → `ValueError`\n- No validation that `get` returned a value before conversion\n\n**Recommendation**:\n```python\n# Add validation wrapper\ndef safe_int_convert(value, rule_id, field_name):\n    if value is None:\n        raise ValueError(f\"Rule {rule_id}: Missing required field {field_name}\")\n    try:\n        return int(value)\n    except (ValueError, TypeError):\n        # Handle or log appropriately\n        raise\n```\n\n## 3. Security Concerns: Dangerous Function Exposure\n\n**Critical**: `__root__` namespace contains high-risk functions accessible to generated code:\n\n- **`eval`**: If any `ge...",
+  "llm_quality_keywords": 18,
   "error": null,
   "metadata": {
-    "nodes": 1291,
-    "edges": 3559,
-    "entry_points": 6
+    "nodes": 2834,
+    "edges": 18712,
+    "entry_points": 0
   }
 }

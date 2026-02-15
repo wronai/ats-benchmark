@@ -16,6 +16,7 @@ from benchmarks.common import (
     count_raw_code_chars,
     evaluate_response_quality,
     get_target_project,
+    save_llm_artifacts,
     save_result,
 )
 
@@ -184,6 +185,19 @@ def run_benchmark() -> BenchmarkResult:
     )
 
     llm_result = call_llm(prompt, system=ANALYSIS_SYSTEM_PROMPT)
+
+    save_llm_artifacts(
+        Path(__file__).parent,
+        stage="benchmark",
+        system_prompt=ANALYSIS_SYSTEM_PROMPT,
+        prompt=prompt,
+        context=context,
+        llm_result=llm_result,
+        extra={
+            "tool": "treesitter",
+            "has_native_parser": _get_parser() is not None,
+        },
+    )
 
     total_duration = time.time() - total_start
 

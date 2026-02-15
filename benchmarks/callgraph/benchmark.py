@@ -18,6 +18,7 @@ from benchmarks.common import (
     count_raw_code_chars,
     evaluate_response_quality,
     get_target_project,
+    save_llm_artifacts,
     save_result,
 )
 
@@ -126,12 +127,46 @@ def _manual_callgraph_extraction(app_path: Path) -> dict:
 
 def _compress_callgraph(graph: dict, max_nodes: int = 200) -> str:
     """Compress call graph into LLM-friendly format."""
-    nodes = graph.get("nodes", [])
-    edges = graph.get("edges", [])
+    raw_nodes = graph.get("nodes", [])
+    raw_edges = graph.get("edges", [])
+
+    nodes = []
+    for node in raw_nodes:
+        if isinstance(node, str):
+            nodes.append(node)
+        elif isinstance(node, dict):
+            name = node.get("name") or node.get("id") or node.get("function") or node.get("qualified_name")
+            if name:
+                nodes.append(str(name))
+
+    edges = []
+    for edge in raw_edges:
+        if isinstance(edge, dict):
+            src = edge.get("from") or edge.get("caller") or edge.get("src")
+            dst = edge.get("to") or edge.get("callee") or edge.get("dst")
+            if src and dst:
+                edges.append({"from": str(src), "to": str(dst)})
+        elif isinstance(edge, (list, tuple)) and len(edge) >= 2:
+            edges.append({"from": str(edge[0]), "to": str(edge[1])})
+
+    if not nodes:
+        return "# Call Graph Analysis\n## Nodes (0 functions/classes)\n\n## Call Edges (0 relationships)"
+
+    nodes = sorted(set(nodes))
 
     # If too large, prioritize entry points and their neighbors
     if len(nodes) > max_nodes:
-        entry_points = set(graph.get("entry_points", []))
+        entry_points = set()
+        for ep in graph.get("entry_points", []):
+            if isinstance(ep, str):
+                entry_points.add(ep)
+            elif isinstance(ep, dict):
+                name = ep.get("name") or ep.get("id") or ep.get("function")
+                if name:
+                    entry_points.add(str(name))
+            else:
+                entry_points.add(str(ep))
+
         priority_nodes = set(entry_points)
 
         # Add neighbors of entry points
@@ -139,6 +174,23 @@ def _compress_callgraph(graph: dict, max_nodes: int = 200) -> str:
             if edge.get("from") in entry_points or edge.get("to") in entry_points:
                 priority_nodes.add(edge.get("from"))
                 priority_nodes.add(edge.get("to"))
+
+        # Fallback when no explicit entry points are available
+        if not priority_nodes:
+            degree = {}
+            for edge in edges:
+                src = edge.get("from")
+                dst = edge.get("to")
+                if src:
+                    degree[src] = degree.get(src, 0) + 1
+                if dst:
+                    degree[dst] = degree.get(dst, 0) + 1
+
+            if degree:
+                ranked = sorted(degree.items(), key=lambda item: item[1], reverse=True)
+                priority_nodes.update(node for node, _ in ranked[:max_nodes])
+            else:
+                priority_nodes.update(nodes[:max_nodes])
 
         # Limit
         nodes = sorted(priority_nodes)[:max_nodes]
@@ -192,6 +244,20 @@ def run_benchmark() -> BenchmarkResult:
     )
 
     llm_result = call_llm(prompt, system=ANALYSIS_SYSTEM_PROMPT)
+
+    save_llm_artifacts(
+        Path(__file__).parent,
+        stage="benchmark",
+        system_prompt=ANALYSIS_SYSTEM_PROMPT,
+        prompt=prompt,
+        context=context,
+        llm_result=llm_result,
+        extra={
+            "tool": "callgraph",
+            "nodes": len(graph.get("nodes", [])),
+            "edges": len(graph.get("edges", [])),
+        },
+    )
 
     total_duration = time.time() - total_start
 

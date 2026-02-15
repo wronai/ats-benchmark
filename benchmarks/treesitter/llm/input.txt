@@ -1,0 +1,185 @@
+Analyze this tree-sitter (direct AST) representation of a project.
+Find bugs, data flow issues, and refactoring opportunities.
+
+# Tree-sitter AST Analysis
+
+## Summary
+  Files analyzed: 10
+  Total AST nodes: 684083
+  Functions found: 2097
+  Classes found: 9
+  Unique imports: 10
+
+## app/__init__.py
+  AST nodes: 11, depth: 4
+
+## app/analytics.py
+  AST nodes: 76008, depth: 13
+  Sample AST (function):
+    (function_definition
+      (def "def"
+      )
+      (identifier "unsafe_sql_lookup"
+      )
+      (parameters
+        (( "("
+        )
+        (typed_parameter
+          (identifier "conn"
+          )
+          (: ":"
+          )
+          (type
+          )
+
+## app/api.py
+  AST nodes: 76008, depth: 13
+  Sample AST (function):
+    (function_definition
+      (def "def"
+      )
+      (identifier "unsafe_sql_lookup"
+      )
+      (parameters
+        (( "("
+        )
+        (typed_parameter
+          (identifier "conn"
+          )
+          (: ":"
+          )
+          (type
+          )
+
+## app/auth.py
+  AST nodes: 76008, depth: 13
+  Sample AST (function):
+    (function_definition
+      (def "def"
+      )
+      (identifier "unsafe_sql_lookup"
+      )
+      (parameters
+        (( "("
+        )
+        (typed_parameter
+          (identifier "conn"
+          )
+          (: ":"
+          )
+          (type
+          )
+
+## app/config.py
+  AST nodes: 76008, depth: 13
+  Sample AST (function):
+    (function_definition
+      (def "def"
+      )
+      (identifier "unsafe_sql_lookup"
+      )
+      (parameters
+        (( "("
+        )
+        (typed_parameter
+          (identifier "conn"
+          )
+          (: ":"
+          )
+          (type
+          )
+
+## app/db.py
+  AST nodes: 76008, depth: 13
+  Sample AST (function):
+    (function_definition
+      (def "def"
+      )
+      (identifier "unsafe_sql_lookup"
+      )
+      (parameters
+        (( "("
+        )
+        (typed_parameter
+          (identifier "conn"
+          )
+          (: ":"
+          )
+          (type
+          )
+
+## app/etl.py
+  AST nodes: 76008, depth: 13
+  Sample AST (function):
+    (function_definition
+      (def "def"
+      )
+      (identifier "unsafe_sql_lookup"
+      )
+      (parameters
+        (( "("
+        )
+        (typed_parameter
+          (identifier "conn"
+          )
+          (: ":"
+          )
+          (type
+          )
+
+## app/inventory.py
+  AST nodes: 76008, depth: 13
+  Sample AST (function):
+    (function_definition
+      (def "def"
+      )
+      (identifier "unsafe_sql_lookup"
+      )
+      (parameters
+        (( "("
+        )
+        (typed_parameter
+          (identifier "conn"
+          )
+          (: ":"
+          )
+          (type
+          )
+
+## app/logging_pipeline.py
+  AST nodes: 76008, depth: 13
+  Sample AST (function):
+    (function_definition
+      (def "def"
+      )
+      (identifier "unsafe_sql_lookup"
+      )
+      (parameters
+        (( "("
+        )
+        (typed_parameter
+          (identifier "conn"
+          )
+          (: ":"
+          )
+          (type
+          )
+
+## app/orders.py
+  AST nodes: 76008, depth: 13
+  Sample AST (function):
+    (function_definition
+      (def "def"
+      )
+      (identifier "unsafe_sql_lookup"
+      )
+      (parameters
+        (( "("
+        )
+        (typed_parameter
+          (identifier "conn"
+          )
+          (: ":"
+          )
+          (type
+          )

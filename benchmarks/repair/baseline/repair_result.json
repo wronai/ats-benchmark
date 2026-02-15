@@ -1,0 +1,12 @@
+{
+  "tool": "baseline",
+  "target_project": "/project",
+  "problem": "Brak parsera logów do data flow - LogFlowParser nie istnieje, brak grupowania po trace_id, brak kompresji logów do grafu dla LLM",
+  "diagnosis": "",
+  "fixed_files": {},
+  "test_code": "",
+  "tokens_in": 61248,
+  "tokens_out": 4096,
+  "duration_sec": 53.48669791221619,
+  "error": null
+}

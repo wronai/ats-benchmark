@@ -7,6 +7,7 @@ import os
 import sys
 import time
 from dataclasses import asdict, dataclass, field
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -108,16 +109,30 @@ def get_temperature() -> float:
 
 
 def get_target_project() -> Path:
-    """Return TARGET_PROJECT path from env, falling back to sample-app."""
+    """Return TARGET_PROJECT path from env, preferring Docker /project mount when present."""
     target = os.getenv("TARGET_PROJECT", "").strip()
+    docker_project = Path("/project")
+
     if target:
         p = Path(target)
+
+        # Local absolute path in non-Docker usage
+        if p.is_absolute() and p.exists():
+            return p
+
+        # Docker mount path
+        if docker_project.exists():
+            return docker_project
+
+        # Local relative path fallback
         if p.exists():
             return p
-        # Docker mount path
-        if Path("/project").exists():
-            return Path("/project")
+
         raise FileNotFoundError(f"TARGET_PROJECT not found: {target}")
+
+    if docker_project.exists():
+        return docker_project
+
     return get_sample_app_path()
 
 
@@ -340,6 +355,63 @@ def save_result(result: BenchmarkResult, output_dir: Path) -> None:
     print(f"  duration_total={result.duration_total_sec:.2f}s")
     if result.error:
         print(f"  ERROR: {result.error}")
+
+
+def save_llm_artifacts(
+    output_dir: Path,
+    *,
+    stage: str,
+    system_prompt: str,
+    prompt: str,
+    context: str,
+    llm_result: Dict[str, Any],
+    extra: Optional[Dict[str, Any]] = None,
+) -> None:
+    """Persist LLM request/response artifacts for audit and timeline tracking."""
+    llm_dir = output_dir / "llm"
+    llm_dir.mkdir(parents=True, exist_ok=True)
+
+    now = datetime.now(timezone.utc)
+    timestamp = now.isoformat()
+
+    (llm_dir / "system.txt").write_text(system_prompt or "", encoding="utf-8")
+    (llm_dir / "input.txt").write_text(prompt or "", encoding="utf-8")
+    (llm_dir / "context.txt").write_text(context or "", encoding="utf-8")
+    (llm_dir / "output.txt").write_text((llm_result or {}).get("response", "") or "", encoding="utf-8")
+
+    error_msg = (llm_result or {}).get("error")
+    if error_msg:
+        (llm_dir / "error.txt").write_text(str(error_msg), encoding="utf-8")
+
+    metadata = {
+        "timestamp_utc": timestamp,
+        "stage": stage,
+        "model": get_model(),
+        "target_project_env": os.getenv("TARGET_PROJECT", ""),
+        "target_project_resolved": str(get_target_project()),
+        "tokens_in": (llm_result or {}).get("tokens_in", 0),
+        "tokens_out": (llm_result or {}).get("tokens_out", 0),
+        "duration_sec": (llm_result or {}).get("duration_sec", 0),
+        "error": error_msg,
+        "prompt_chars": len(prompt or ""),
+        "context_chars": len(context or ""),
+    }
+    if extra:
+        metadata["extra"] = extra
+
+    (llm_dir / "metadata.json").write_text(
+        json.dumps(metadata, indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
+
+    timeline_line = (
+        f"{timestamp} | stage={stage} | model={metadata['model']} | "
+        f"tokens_in={metadata['tokens_in']} | tokens_out={metadata['tokens_out']} | "
+        f"duration_sec={metadata['duration_sec']} | error={bool(error_msg)}"
+    )
+    timeline_file = llm_dir / "timeline.log"
+    with timeline_file.open("a", encoding="utf-8") as fh:
+        fh.write(timeline_line + "\n")
 
 
 def save_repair_result(result: RepairResult, output_dir: Path) -> None:

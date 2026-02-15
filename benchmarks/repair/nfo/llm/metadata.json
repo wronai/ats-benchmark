@@ -1,0 +1,18 @@
+{
+  "timestamp_utc": "2026-02-15T14:54:34.089293+00:00",
+  "stage": "repair/nfo",
+  "model": "openrouter/moonshotai/kimi-k2.5",
+  "target_project_env": "./test-broken-code",
+  "target_project_resolved": "/project",
+  "tokens_in": 39325,
+  "tokens_out": 7417,
+  "duration_sec": 305.62622117996216,
+  "error": null,
+  "prompt_chars": 157899,
+  "context_chars": 157453,
+  "extra": {
+    "tool": "nfo",
+    "problem": "Brak parsera logów do data flow - LogFlowParser nie istnieje, brak grupowania po trace_id, brak kompresji logów do grafu dla LLM",
+    "raw_code_chars": 2790515
+  }
+}
