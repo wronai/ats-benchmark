@@ -1,3 +1,5 @@
+![img.png](img.png)
+
 # ats-benchmark
 
 Benchmark narzędzi kompresji kodu dla kontekstu LLM — porównanie **code2logic**, **nfo** i baseline (surowy kod) z użyciem LiteLLM + OpenRouter.
