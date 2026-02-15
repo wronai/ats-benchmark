@@ -10,8 +10,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
-# Install ast-grep globally via npm
-RUN npm install -g @ast-grep/cli
+# Install ast-grep locally (avoid conflict with /usr/bin/sg from SELinux)
+RUN npm install @ast-grep/cli
+ENV PATH="/workspace/node_modules/.bin:${PATH}"
 
 # Install Python dependencies
 COPY benchmarks/astgrep/requirements.txt /workspace/requirements.txt

@@ -6,8 +6,8 @@ WORKDIR /workspace
 RUN apt-get update && apt-get install -y --no-install-recommends gcc g++ && \
     rm -rf /var/lib/apt/lists/*
 
-# Install litellm
-RUN pip install --no-cache-dir litellm>=1.44
+# Install litellm and build tools
+RUN pip install --no-cache-dir setuptools wheel litellm>=1.44
 
 # Copy workspace
 COPY . /workspace/

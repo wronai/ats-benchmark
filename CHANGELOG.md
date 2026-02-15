@@ -1,3 +1,21 @@
+## [1.0.4] - 2026-02-15
+
+### Summary
+
+refactor(docs): deep code analysis engine with 4 supporting modules
+
+### Other
+
+- docker: update Dockerfile
+- update benchmarks/astgrep/requirements.txt
+- update benchmarks/callgraph/requirements.txt
+- docker: update Dockerfile
+- update benchmarks/common.py
+- docker: update Dockerfile
+- update benchmarks/nfo/results.json
+- docker: update Dockerfile
+
+
 ## [1.0.3] - 2026-02-15
 
 ### Summary

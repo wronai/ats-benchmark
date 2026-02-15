@@ -12,6 +12,10 @@ from typing import Any, Dict, List, Optional
 
 import litellm
 
+# Suppress litellm debug info and provider list spam
+litellm.suppress_debug_info = True
+litellm.set_verbose = False
+
 
 # ---------------------------------------------------------------------------
 # .env loading
@@ -210,6 +214,7 @@ def call_llm(prompt: str, system: str = "", max_tokens: int = 0) -> Dict[str, An
             max_tokens=max_tokens,
             temperature=temperature,
             api_key=api_key,
+            timeout=120,  # 120 second timeout
         )
         duration = time.time() - start
 

@@ -2,8 +2,14 @@ FROM python:3.12-slim
 
 WORKDIR /workspace
 
-# Install litellm first
-RUN pip install --no-cache-dir litellm>=1.44
+# Install build dependencies for local package installation
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install litellm and build tools first
+RUN pip install --no-cache-dir setuptools wheel litellm>=1.44
 
 # Copy workspace
 COPY . /workspace/
