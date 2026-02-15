@@ -16,7 +16,7 @@ COPY . /workspace/
 # Fallback: pip install from PyPI during docker run if local not available
 RUN echo '#!/bin/bash\n\
 if [ -d /src/code2logic ]; then\n\
-  pip install --no-cache-dir /src/code2logic[full] 2>/dev/null || pip install --no-cache-dir code2logic[full];\n\
+  pip install --no-cache-dir /src/code2logic[full] || pip install --no-cache-dir code2logic[full];\n\
 else\n\
   pip install --no-cache-dir code2logic[full];\n\
 fi\n\

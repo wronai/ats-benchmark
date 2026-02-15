@@ -1,1 +1,4 @@
 radon
+litellm>=1.44
+setuptools
+wheel

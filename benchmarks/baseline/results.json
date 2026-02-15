@@ -1,17 +1,17 @@
 {
   "tool": "baseline-raw",
   "target_project": "/project",
-  "tokens_in": 0,
-  "tokens_out": 0,
-  "duration_analysis_sec": 0.1023256778717041,
-  "duration_llm_sec": 0.7677581310272217,
-  "duration_total_sec": 0.91977858543396,
+  "tokens_in": 25218,
+  "tokens_out": 4096,
+  "duration_analysis_sec": 0.10267043113708496,
+  "duration_llm_sec": 123.03128719329834,
+  "duration_total_sec": 123.18387508392334,
   "context_chars": 102869,
   "raw_code_chars": 373650,
   "compression_ratio": 0.0,
-  "llm_response": "",
-  "llm_quality_keywords": 0,
-  "error": "litellm.BadRequestError: OpenrouterException - {\"error\":{\"message\":\"openrouter/x-ai/grok-code-fast-1 is not a valid model ID\",\"code\":400},\"user_id\":\"user_37kQZ4yXt4hnDnJeX7tzyA2hBlP\"}",
+  "llm_response": " Code Review: nfo Logging Library\n================================\n\n## 1. Critical Bugs & Logic Errors\n\n### **Thread Safety Violation in gRPC Server**\n**Location:** `examples/grpc-service/server.py:120`\n```python\n_entry_counter = 0  # Global variable\n\ndef _store_request(req: nfo_pb2.LogRequest) -> nfo_pb2.LogResponse:\n    global _entry_counter\n    _entry_counter += 1  # Race condition with multiple gRPC workers\n```\n**Issue:** gRPC servicer runs in a `ThreadPoolExecutor` (default 10 workers). The global counter is not atomic, causing duplicate IDs or lost increments under load.\n**Fix:** Use `threading.Lock()` or `itertools.count()` with atomic operations:\n```python\nimport itertools\nimport threading\n\n_entry_counter = itertools.count(start=1)\n# Or with lock:\n_counter_lock = threading.Lock()\nwith _counter_lock:\n    _entry_counter += 1\n```\n\n### **Blocking I/O in Async Contexts**\n**Locations:** \n- `examples/http-service/main.py:115` (`sqlite3.connect` in async endpoint)\n- `demo/app.py:230` (`browse_logs` endpoint)\n\n**Issue:** FastAPI async endpoints calling synchronous SQLite operations block the event loop, degrading concurrency performance.\n**Fix:** Use `asyncio.to_thread()` or `aiosqlite`:\n```python\n# In browse_logs:\nimport asyncio\nrows = await asyncio.to_thread(_fetch_logs, level, limit)\n```\n\n### **Fragile String Parsing in gRPC Query**\n**Location:** `examples/grpc-service/server.py:175`\n```python\nargs=d.get(\"args\", \"\").strip(\"()\").replace(\"'\", \"\").split(\", \")\n```\n**Issue:** Assumes specific string representation format. Breaks if args contain commas, quotes, or nested structures.\n**Fix:** Store args as JSON in database, parse with `json.loads()`.\n\n### **Resource Leak in SQLite Connections**\n**Location:** `demo/app.py:230-240`\n```python\nconn = sqlite3.connect(DB_PATH)  # No try/finally\n# ... code that might raise ...\nconn.close()\n```\n**Issue:** Connection leaks if exception occurs between connect and close.\n**Fix:** Use context manager:\n```python\nwith sqlite3.connect(...",
+  "llm_quality_keywords": 17,
+  "error": null,
   "metadata": {
     "mode": "raw_source"
   }

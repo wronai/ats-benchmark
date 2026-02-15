@@ -1,2 +1,5 @@
 callgraph
 pyan3
+litellm>=1.44
+setuptools
+wheel

@@ -13,6 +13,7 @@ from typing import Any, Dict, List, Optional
 import litellm
 
 # Suppress litellm debug info and provider list spam
+os.environ["LITELLM_LOG"] = "ERROR"
 litellm.suppress_debug_info = True
 litellm.set_verbose = False
 
@@ -208,13 +209,14 @@ def call_llm(prompt: str, system: str = "", max_tokens: int = 0) -> Dict[str, An
 
     start = time.time()
     try:
+        print(f"  Calling LLM ({model})...", flush=True)
         response = litellm.completion(
             model=model,
             messages=messages,
             max_tokens=max_tokens,
             temperature=temperature,
             api_key=api_key,
-            timeout=120,  # 120 second timeout
+            timeout=300,  # Increased to 300s for large baseline contexts
         )
         duration = time.time() - start
 
@@ -239,6 +241,63 @@ def call_llm(prompt: str, system: str = "", max_tokens: int = 0) -> Dict[str, An
             "duration_sec": duration,
             "error": str(e),
         }
+
+
+def check_llm_connection() -> Dict[str, Any]:
+    """Test LLM connection with a simple prompt and return diagnostic info."""
+    print("=== LLM Connection Test ===", flush=True)
+    model = get_model()
+    print(f"  Model: {model}")
+    
+    api_key = os.getenv("OPENROUTER_API_KEY", "")
+    if not api_key:
+        return {"success": False, "error": "OPENROUTER_API_KEY is not set in .env"}
+    
+    print(f"  API Key: {api_key[:10]}...{api_key[-5:] if len(api_key) > 15 else ''}")
+    
+    test_prompt = "Respond with exactly one word: 'OK'"
+    start = time.time()
+    try:
+        response = litellm.completion(
+            model=model,
+            messages=[{"role": "user", "content": test_prompt}],
+            max_tokens=10,
+            temperature=0,
+            api_key=api_key,
+            timeout=30,
+        )
+        duration = time.time() - start
+        content = response.choices[0].message.content or ""
+        
+        if "OK" in content.upper():
+            print(f"  Status: SUCCESS ({duration:.2f}s)")
+            return {"success": True, "duration": duration, "model": model}
+        else:
+            error_msg = f"Unexpected response from LLM: {content}"
+            print(f"  Status: FAILED - {error_msg}")
+            return {"success": False, "error": error_msg}
+            
+    except Exception as e:
+        duration = time.time() - start
+        error_msg = str(e)
+        print(f"  Status: ERROR ({duration:.2f}s)")
+        print(f"  Error Detail: {error_msg}")
+        
+        # Detailed diagnostics
+        diag = []
+        if "Authentication" in error_msg or "401" in error_msg:
+            diag.append("Check if your OPENROUTER_API_KEY is valid.")
+        if "Connection" in error_msg or "404" in error_msg:
+            diag.append("Check your internet connection or if the model ID is correct.")
+        if "429" in error_msg or "limit" in error_msg.lower():
+            diag.append("Rate limit exceeded or insufficient credits.")
+            
+        if diag:
+            print("\n  Recommended Fixes:")
+            for d in diag:
+                print(f"  - {d}")
+                
+        return {"success": False, "error": error_msg, "diagnostics": diag}
 
 
 # ---------------------------------------------------------------------------

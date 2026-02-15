@@ -18,7 +18,7 @@ COPY . /workspace/
 # Fallback: pip install from PyPI during docker run if local not available
 RUN echo '#!/bin/bash\n\
 if [ -d /src/nfo ]; then\n\
-  pip install --no-cache-dir /src/nfo 2>/dev/null || pip install --no-cache-dir nfo;\n\
+  pip install --no-cache-dir /src/nfo || pip install --no-cache-dir nfo;\n\
 else\n\
   pip install --no-cache-dir nfo;\n\
 fi\n\
