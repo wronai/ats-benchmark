@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  code2logic-bench:
+    build:
+      context: .
+      dockerfile: benchmarks/code2logic/Dockerfile
+    env_file: .env
+    volumes:
+      - ./benchmarks/code2logic:/workspace/benchmarks/code2logic
+    working_dir: /workspace
+
+  nfo-bench:
+    build:
+      context: .
+      dockerfile: benchmarks/nfo/Dockerfile
+    env_file: .env
+    volumes:
+      - ./benchmarks/nfo:/workspace/benchmarks/nfo
+    working_dir: /workspace
+
+  baseline-bench:
+    build:
+      context: .
+      dockerfile: benchmarks/baseline/Dockerfile
+    env_file: .env
+    volumes:
+      - ./benchmarks/baseline:/workspace/benchmarks/baseline
+    working_dir: /workspace

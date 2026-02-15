@@ -1,0 +1,7 @@
+litellm>=1.44
+code2logic>=1.0
+tree-sitter>=0.21
+tree-sitter-python>=0.21
+networkx>=3.0
+rapidfuzz>=3.0
+pyyaml>=6.0

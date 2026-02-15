@@ -1,3 +1,28 @@
+## [1.0.2] - 2026-02-15
+
+### Summary
+
+feat(build): deep code analysis engine with 7 supporting modules
+
+### Docs
+
+- docs: update README
+
+### Other
+
+- update .env.example
+- update .gitignore
+- build: update Makefile
+- update analyze_results.py
+- update benchmarks/__init__.py
+- docker: update Dockerfile
+- build: update Makefile
+- update benchmarks/baseline/__init__.py
+- update benchmarks/baseline/benchmark.py
+- update benchmarks/baseline/requirements.txt
+- ... and 15 more
+
+
 ## [1.0.1] - 2026-02-15
 
 ### Summary
