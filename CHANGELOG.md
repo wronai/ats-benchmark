@@ -1,3 +1,23 @@
+## [1.0.7] - 2026-02-15
+
+### Summary
+
+refactor(benchmarks): deep code analysis engine with 7 supporting modules
+
+### Other
+
+- update analyze_results.py
+- update benchmark_summary.json
+- update benchmarks/astgrep/results.json
+- update benchmarks/bandit/results.json
+- update benchmarks/baseline/results.json
+- update benchmarks/callgraph/results.json
+- update benchmarks/code2logic/results.json
+- update benchmarks/nfo/results.json
+- update benchmarks/radon/results.json
+- update benchmarks/treesitter/results.json
+
+
 ## [1.0.6] - 2026-02-15
 
 ### Summary

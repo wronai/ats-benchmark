@@ -1,0 +1,25 @@
+{
+  "tool": "bandit",
+  "target_project": "/project",
+  "tokens_in": 114,
+  "tokens_out": 2676,
+  "duration_analysis_sec": 92.65068054199219,
+  "duration_llm_sec": 59.95792746543884,
+  "duration_total_sec": 152.65891432762146,
+  "context_chars": 26,
+  "raw_code_chars": 373650,
+  "compression_ratio": 0.9999304161648601,
+  "llm_response": "The Bandit security analysis output appears to be missing from your request (the content after `# Bandit Security Analysis` is empty). \n\nHowever, as a senior engineer, I'll provide a **comprehensive analysis framework** for interpreting Bandit reports (Python security linter), using common high-severity findings as examples. When you provide the actual report, apply this methodology:\n\n---\n\n## Analysis Framework for Bandit Security Reports\n\n### 1. Critical Security Findings (High Severity)\n\n#### **B608: Hardcoded SQL Queries (SQL Injection)**\n```python\n# Bandit finding: Possible SQL injection vector through string-based query construction\ndef get_user(user_id):\n    query = \"SELECT * FROM users WHERE id = \" + user_id  # B608\n    cursor.execute(query)\n```\n\n**Issues Identified:**\n- **Security**: SQL injection via string concatenation\n- **Data Flow**: No input validation/sanitization on `user_id` parameter\n- **Bug**: Potential for data exfiltration or schema manipulation\n- **Refactoring**: \n  - Use parameterized queries: `cursor.execute(\"SELECT * FROM users WHERE id = %s\", (user_id,))`\n  - Implement repository pattern to centralize query construction\n  - Add input validation layer (UUID/int validation) before DB call\n\n#### **B307: Eval/Exec Usage (Code Injection)**\n```python\n# Bandit finding: Use of eval detected\ndef process_formula(formula, user_input):\n    result = eval(formula + user_input)  # B307\n```\n\n**Issues Identified:**\n- **Security**: Arbitrary code execution\n- **Data Flow**: `user_input` taint reaches execution context without sandboxing\n- **Refactoring**: \n  - Replace with `ast.literal_eval()` for literals only\n  - Use `json.loads()` for JSON data\n  - Implement domain-specific language (DSL) parser instead of Python eval\n\n#### **B301: Pickle/Deserialization**\n```python\n# Bandit finding: Pickle and modules that wrap it can be unsafe\ndef load_session(data):\n    return pickle.loads(base64.b64decode(data))  # B301\n```\n\n**Issues Identified:**\n- **Security**: Remot...",
+  "llm_quality_keywords": 18,
+  "error": null,
+  "metadata": {
+    "focus": "security_vulnerabilities",
+    "categories": [
+      "injection",
+      "xss",
+      "crypto",
+      "deserialization",
+      "secrets"
+    ]
+  }
+}

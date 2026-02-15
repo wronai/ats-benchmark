@@ -3,16 +3,16 @@
     {
       "tool": "code2logic",
       "target_project": "/project",
-      "tokens_in": 48587,
+      "tokens_in": 48588,
       "tokens_out": 4096,
-      "duration_analysis_sec": 6.703968286514282,
-      "duration_llm_sec": 100.21756887435913,
-      "duration_total_sec": 106.98107028007507,
-      "context_chars": 164088,
+      "duration_analysis_sec": 6.402257919311523,
+      "duration_llm_sec": 116.84864497184753,
+      "duration_total_sec": 123.30191659927368,
+      "context_chars": 164092,
       "raw_code_chars": 373650,
-      "compression_ratio": 0.5608510638297872,
-      "llm_response": "# Code Review Analysis: nfo Logging Framework\n\n## 1. Potential Bugs & Logic Errors\n\n### Critical Threading Issues\n**`nfo/llm.py:189-194` & `nfo/webhook.py:123-131`**\n- **Bug**: Both `LLMSink.write()` and `WebhookSink.write()` create a new `threading.Thread` for every log entry without any pool or limit.\n- **Impact**: Unbounded thread creation under load leads to resource exhaustion (OOM) and degraded performance.\n- **Fix**: Use `concurrent.futures.ThreadPoolExecutor` with max_workers or implement an async work queue.\n\n```python\n# Current dangerous pattern:\nthreading.Thread(target=self._process, args=(entry,)).start()\n```\n\n**`nfo/ring_buffer_sink.py:48-65`**\n- **Bug**: Race condition in `write()` method. The buffer is cleared after delegate write fails:\n```python\nif should_flush:\n    for e in self._buffer: \n        self._delegate.write(e)\n    self._buffer.clear()  # If write() raises, buffer cleared but entries lost\n```\n- **Fix**: Clear buffer only after successful writes, or implement retry logic.\n\n### SQL & Data Integrity\n**`nfo/sinks.py:66-69` (`SQLiteSink`)**\n- **Bug**: Creates new connection per `_get_conn()` call without connection pooling. SQLite handles are not thread-safe across multiple connections to the same DB without WAL mode.\n- **Fix**: Enable WAL mode (`PRAGMA journal_mode=WAL`) or use a single shared connection with proper locking.\n\n**`demo/app.py:226-244` (`browse_logs`)**\n- **Issue**: SQL construction mixes string formatting with parameters. While `level` is parameterized, the query construction logic is fragile:\n```python\nif level:\n    query += \" AND level = ?\"\n    params.append(level.upper())\n```\n- **Risk**: If `level` contains SQL keywords or if query construction logic changes, injection possible.\n\n### Resource Management\n**`nfo/webhook.py:109-121` (`WebhookSink._send`)**\n- **Bug**: `urllib.request.urlopen()` called without timeout parameter - can hang indefinitely.\n- **Fix**: Add `timeout=10` parameter.\n\n**`nfo/buffered_sink.py:95-105` (`Async...",
-      "llm_quality_keywords": 20,
+      "compression_ratio": 0.5608403586243811,
+      "llm_response": " Based on my analysis of the AST and function logic representation, here are the critical findings organized by category:\n\n## 1. Critical Bugs & Logic Errors\n\n### **Race Condition in PipelineSink (`nfo/pipeline_sink.py`)**\n**Location**: `PipelineSink._flush_stale()` (lines 133-141)\n**Issue**: The method iterates over `self._buffers.items()` and calls `_flush_run()` which executes `self._buffers.pop(run_id, None)`. **Modifying a dictionary during iteration raises `RuntimeError`** in Python 3.\n```python\n# Current (broken):\nfor run_id, entries in self._buffers.items():  # RuntimeError here\n    if now - entries[-1].timestamp > self._buffer_timeout:\n        self._flush_run(run_id)  # Mutates dict during iteration\n```\n**Fix**: Collect keys to flush first, then iterate: `list(self._buffers.items())` or `list(self._buffers.keys())`.\n\n### **Resource Exhaustion via Thread Leak (`nfo/llm.py`)**\n**Location**: `LLMSink.write()` (lines 189-194)\n**Issue**: Starts a new `threading.Thread` for **every log entry** without tracking or joining:\n```python\nthread = threading.Thread(target=self._process, args=(entry,))\nthread.start()  # Unbounded thread creation under load\n```\n**Impact**: System resource exhaustion (thread limit) under high log volume.\n**Fix**: Use a `ThreadPoolExecutor` or async queue with worker threads.\n\n### **Silent Data Loss in RingBufferSink (`nfo/ring_buffer_sink.py`)**\n**Location**: `RingBufferSink.close()` (lines 67-70)\n**Issue**: Clears the buffer without flushing pending entries:\n```python\ndef close(self):\n    with self._lock:\n        self._buffer.clear()  # Data loss!\n    self._delegate.close()\n```\n**Fix**: Flush remaining entries before clearing: `self._flush_if_needed(force=True)`.\n\n### **Unstopped HTTP Server (`nfo/prometheus.py`)**\n**Location**: `PrometheusSink.__init__()` and `_start_server()` (lines 51-107)\n**Issue**: `start_http_server` returns a server object that is not stored, making it impossible to shut down cleanly in `close()`.\n**Fix**: Store ser...",
+      "llm_quality_keywords": 19,
       "error": null,
       "metadata": {
         "parser": "tree-sitter",
@@ -22,16 +22,16 @@
     {
       "tool": "nfo",
       "target_project": "/project",
-      "tokens_in": 12073,
+      "tokens_in": 12065,
       "tokens_out": 4096,
-      "duration_analysis_sec": 0.22012877464294434,
-      "duration_llm_sec": 222.0544879436493,
-      "duration_total_sec": 222.3252489566803,
+      "duration_analysis_sec": 0.24877071380615234,
+      "duration_llm_sec": 68.68086266517639,
+      "duration_total_sec": 68.99134993553162,
       "context_chars": 45673,
       "raw_code_chars": 373650,
       "compression_ratio": 0.8777652883714706,
-      "llm_response": " Based on the NFO (data flow + runtime logging) representation, here is a detailed code review identifying bugs, data flow issues, security concerns, and refactoring opportunities.\n\n## 1. Critical Bugs & Logic Errors\n\n### **A. Incorrect Data Annotations in Sinks (`nfo/sinks.py`)**\n**Issue:** `CSVSink` and `MarkdownSink` have copy-paste errors from `SQLiteSink` in their data access patterns.\n- `CSVSink.write()` lists `data: _conn, _lock, db_path, table` — CSV sinks don't use database connections or tables.\n- `MarkdownSink.write()` and `MarkdownSink.close()` similarly reference `_conn, db_path, table`.\n- **Impact:** Runtime errors when these sinks attempt to access non-existent attributes.\n\n**Fix:** Correct the data annotations to reflect actual instance variables (`_lock`, `file_path`, `_writer` for CSV, etc.).\n\n### **B. Undefined Attributes in `DiffTracker` (`nfo/env.py`)**\n**Issue:** `DiffTracker.write()` accesses `environment, trace_id, version`, but `DiffTracker.__init__()` only initializes `_history, _lock, delegate`.\n```python\n# Current state:\nDiffTracker.__init__() -> None\n  data: _history, _lock, delegate\nDiffTracker.write() -> None\n  data: environment, trace_id, version  # Undefined!\n```\n\n**Fix:** Store environment/trace_id/version in `__init__` or remove from `write()` if they should come from the entry data.\n\n### **C. Syntax Error in `LLMSink` (`nfo/llm.py`)**\n**Issue:** `LLMSink._analyze()` has malformed data annotation: `data: detect_injection, system_prompt}` (trailing `}`).\n\n### **D. Typos in `PipelineSink` (`nfo/pipeline_sink.py`)**\n**Issue:** Multiple truncated/typoed data access identifiers:\n- `tick_count()`: `_flus` → likely `_flush_count` or `_flush_event`\n- `session_cost()`: `_dele` → `_delegate`\n- These suggest incomplete refactoring or parsing errors.\n\n### **E. Import Pollution in `nfo/auto.py`**\n**Issue:** Contains `import myapp.core` and duplicate `import nfo` — appears to be development/debugging residue that would cause `ModuleNotFoundError...",
-      "llm_quality_keywords": 15,
+      "llm_response": "Based on the NFO data flow analysis, here are the critical issues and recommendations:\n\n## 1. Critical Bugs & Logic Errors\n\n### Hardcoded Import in Auto-Logger\n**Location:** `nfo/auto.py`\n- **Bug:** Imports hardcoded module `myapp.core` \n- **Impact:** Will crash with `ModuleNotFoundError` in any environment except the original developer's\n- **Fix:** Remove hardcoded import or make it parameter-driven:\n```python\n# Remove: import myapp.core\n# Use: target_module = sys.modules.get(module_name)\n```\n\n### Sink Attribute Mismatch (Copy-Paste Error)\n**Location:** `nfo/sinks.py` - `CSVSink.write()` and `MarkdownSink.write()`\n- **Bug:** Both methods access SQLite-specific attributes (`_conn`, `db_path`, `table`) despite being file-based sinks\n- **Data Flow Evidence:** \n  - `CSVSink.__init__` stores: `_lock, file_path`\n  - `CSVSink.write()` accesses: `_conn, db_path, table` (undefined)\n- **Fix:** Correct data flow to use `file_path` and file handles instead of DB connection attributes\n\n### Uninitialized Instance Variables\n**Location:** `nfo/pipeline_sink.py` - `PipelineSink` class\n- **Bug:** Multiple methods access instance variables not initialized in `__init__`:\n  - `_session_cost`, `_tick`, `_timeout` accessed in `close()` and `_flush_stale()`\n  - `_max_recent`, `_recent_costs` accessed in `_flush_run()`\n  - `_color`, `_width` accessed in `_c()` and `_render_block()`\n- **Fix:** Initialize all instance variables in `__init__`:\n```python\ndef __init__(self):\n    self._session_cost = 0.0\n    self._tick = 0\n    self._timeout = 30.0\n    self._recent_costs = collections.deque(maxlen=self._max_recent)\n```\n\n### Missing Data Initialization\n**Location:** `nfo/env.py` - `DiffTracker.write()`\n- **Bug:** Accesses `environment`, `trace_id`, `version` but `__init__` only stores `_history`, `_lock`, `delegate`\n- **Fix:** Ensure `DiffTracker` receives and stores env context or delegates tagging to wrapped sink\n\n## 2. Data Flow & Validation Issues\n\n### Missing URL Storage\n**Location:** `nfo/we...",
+      "llm_quality_keywords": 17,
       "error": null,
       "metadata": {
         "mode": "data_flow+runtime",
@@ -41,22 +41,129 @@
     {
       "tool": "baseline-raw",
       "target_project": "/project",
-      "tokens_in": 25218,
-      "tokens_out": 4096,
-      "duration_analysis_sec": 0.14100909233093262,
-      "duration_llm_sec": 24.183615922927856,
-      "duration_total_sec": 24.37869691848755,
-      "context_chars": 102869,
-      "raw_code_chars": 373650,
+      "tokens_in": 61087,
+      "tokens_out": 2233,
+      "duration_analysis_sec": 0.0007715225219726562,
+      "duration_llm_sec": 60.2504460811615,
+      "duration_total_sec": 60.25322675704956,
+      "context_chars": 232610,
+      "raw_code_chars": 2790515,
       "compression_ratio": 0.0,
-      "llm_response": " Here is a comprehensive code review of the nfo logging framework and its examples.\n\n## 1. Potential Bugs & Logic Errors\n\n### **Critical: Argument Handling Bug in CLI** (`nfo/__main__.py`)\nThe `cmd_run` function has confusing argument mutation that may cause unexpected behavior:\n```python\n# Line ~85-90\nargs.command_list = cmd  # Stores command in command_list\nargs_obj = argparse.Namespace(**vars(args))\nargs_obj.command = cmd   # Overwrites subcommand name with command list\ncmd_run(args_obj)        # cmd_run expects args.command to be the command list\n```\n**Fix**: Refactor to use distinct attribute names (`args.command_args` vs `args.subcommand`) to avoid namespace collision.\n\n### **Type Safety Issue in Metrics Endpoint** (`demo/app.py`)\n```python\n@app.get(\"/metrics\")\ndef metrics():\n    return PlainTextResponse(\n        prom_sink.get_metrics().decode(),  # Assumes bytes, may raise AttributeError\n        media_type=\"text/plain; version=0.0.4; charset=utf-8\",\n    )\n```\n**Fix**: Add type check: `metrics = prom_sink.get_metrics(); return metrics.decode() if isinstance(metrics, bytes) else metrics`\n\n### **Fragile Argument Parsing** (`examples/grpc-service/server.py`)\nIn `QueryLogs`, the reconstruction of `args` from database storage is fragile:\n```python\nargs=d.get(\"args\", \"\").strip(\"()\").replace(\"'\", \"\").split(\", \") if d.get(\"args\") else []\n```\nThis breaks if arguments contain commas or quotes (e.g., `[\"a, b\", \"c\"]` becomes `['a', 'b', 'c']`).\n\n**Fix**: Store args as JSON array in database, not string representation.\n\n### **Unbounded Sleep DoS** (`demo/app.py`)\n```python\n@app.get(\"/demo/slow\")\ndef demo_slow():\n    duration = random.uniform(0.1, 0.5)  # Hardcoded safe range, but\n    result = slow_operation(duration)     # if endpoint accepted user input directly,\n    # ...\n```\nWhile currently safe with hardcoded ranges, the `slow_operation` function accepts arbitrary floats. If exposed directly, this could be used for DoS via resource exhaustion.\n\n**Fix**: Add validation:...",
-      "llm_quality_keywords": 12,
+      "llm_response": "# Code Review: `app/analytics.py` & `app/__init__.py`\n\n## Executive Summary\nThe codebase contains **critical security vulnerabilities**, severe **code duplication** (200+ identical function templates), numerous **logic errors**, and **memory leaks**. The `generated_rule_*` functions represent a massive maintenance liability and contain identical bugs replicated across all instances.\n\n---\n\n## 1. Security Concerns (Critical)\n\n### SQL Injection\n**Function:** `unsafe_sql_lookup`  \n**Issue:** Direct string interpolation of user input into SQL query  \n```python\nquery = f\"SELECT * FROM {{table}} WHERE name = '{{user_input}}'\"\n```\n**Recommendation:** Use parameterized queries:\n```python\nquery = \"SELECT * FROM ? WHERE name = ?\"\nconn.execute(query, (table, user_input))\n```\n\n### Arbitrary Code Execution\n**Function:** `insecure_eval`  \n**Issue:** `eval(expression)` executes arbitrary Python code  \n**Recommendation:** Use `ast.literal_eval` for safe evaluation or implement a proper expression parser.\n\n### Hardcoded Secrets\n**Functions:** All `generated_rule_*` (0-219+)  \n**Issue:** Secrets embedded in source code:\n```python\nsecret = \"hardcoded-secret-15\"  # Repeated across functions\nGLOBAL_CACHE[cache_key] = {'secret': secret, ...}  # Secrets in cache\n```\n**Recommendation:** Use environment variables or secret management (e.g., `os.environ.get('SECRET')`).\n\n### Data Exposure\n**Functions:** All `generated_rule_*`  \n**Issue:** Storing secrets alongside payload data in global cache with no access controls.\n\n---\n\n## 2. Logic Errors & Bugs\n\n### Division by Zero\n**Functions:** `broken_average`, all `generated_rule_*`  \n**Issue:** \n```python\n# broken_average\nreturn sum(values) / (len(values) - 1)  # Crash on single element\n\n# generated_rule_*\nratio = amount / (count - 1)  # Crash when count=1\n```\n**Recommendation:** Validate denominators before division.\n\n### Mutable Default Arguments\n**Functions:** `accumulate`, all `generated_rule_*`  \n**Issue:** Shared state across calls:\n```python\n...",
+      "llm_quality_keywords": 20,
       "error": null,
       "metadata": {
         "mode": "raw_source"
       }
+    },
+    {
+      "tool": "callgraph",
+      "target_project": "/project",
+      "tokens_in": 236,
+      "tokens_out": 1896,
+      "duration_analysis_sec": 0.2915370464324951,
+      "duration_llm_sec": 115.60691404342651,
+      "duration_total_sec": 115.9506413936615,
+      "context_chars": 502,
+      "raw_code_chars": 373650,
+      "compression_ratio": 0.9986564967215309,
+      "llm_response": " Based on this static call graph, I've identified several critical architectural and testing issues. The **zero call edges** between 6 nodes is a major red flag indicating potential integration failures or analysis gaps.\n\n## 1. Critical Integration Bugs\n\n### Test-Implementation Disconnect\n**Issue**: Test classes (`TestPipelineSinkBasic`, `TestPipelineSinkMultipleRuns`) show no calls to `PipelineSink` implementation.\n- **Risk**: Tests may be using heavy mocking or not testing actual implementation (false confidence)\n- **Action**: Verify if `test_complete_marker_flushes_run` actually invokes `PipelineSink._flush_run` or merely mocks it. If mocking, this is a behavior verification anti-pattern.\n\n### Orphaned Implementation\n**Issue**: `PipelineSink` has methods `_flush_run` (private) and `pending_runs`, but zero incoming calls.\n- **Risk**: Dead code or incomplete integration\n- **Action**: Check if `PipelineSink` is actually instantiated in the codebase or if it's an unfinished abstraction\n\n## 2. Data Flow Issues\n\n### Buffer Management (Potential Memory Leak)\n**Location**: `nfo.pipeline_sink.PipelineSink._flush_run`\n**Issue**: \"Flush\" semantics suggest buffered data accumulation, but no visible \"add\" or \"append\" methods in the graph.\n- **Risk**: Unbounded growth of `pending_runs` if flush conditions aren't met\n- **Missing**: No visible error handling for flush failures (retry logic, partial flush states)\n\n### State Visibility\n**Location**: `PipelineSink.pending_runs`\n**Issue**: Exposing internal pending state without synchronization primitives visible.\n- **Risk**: Race conditions if multiple threads/coroutines access pending runs during flush\n- **Action**: Verify if `pending_runs` is property-guarded or if direct access allows modification during iteration\n\n## 3. Refactoring Opportunities\n\n### Private Method Testing Anti-Pattern\n**Issue**: Tests likely accessing `_flush_run` (private by convention) directly or via reflection.\n```python\n# Current (likely):\nsink._flush_run...",
+      "llm_quality_keywords": 19,
+      "error": null,
+      "metadata": {
+        "nodes": 1291,
+        "edges": 3559,
+        "entry_points": 6
+      }
+    },
+    {
+      "tool": "treesitter",
+      "target_project": "/project",
+      "tokens_in": 666,
+      "tokens_out": 2206,
+      "duration_analysis_sec": 0.10741138458251953,
+      "duration_llm_sec": 44.399231910705566,
+      "duration_total_sec": 44.56098914146423,
+      "context_chars": 2113,
+      "raw_code_chars": 373650,
+      "compression_ratio": 0.9943449752442125,
+      "llm_response": " Based on the high-level AST representation provided, I can identify several structural issues and potential concerns. However, note that the AST snippets lack granular details (variable assignments, control flow bodies, exception handling), limiting deep logic analysis.\n\n## 1. Potential Bugs & Logic Errors\n\n### **Duplicate Function Definitions (Name Collision)**\n- **Location**: `examples/async-usage/main.py` and `examples/bash-wrapper/main.py`\n- **Issue**: Both define `setup_logger()` with identical signatures (no parameters, returns `Logger`)\n- **Risk**: If these modules are ever imported together or consolidated, this causes redefinition errors or confusion about which logger configuration is active.\n- **Recommendation**: Move to a shared `utils.py` or namespace with module-specific names (`setup_async_logger`, `setup_bash_logger`).\n\n### **Load Generator Logic Concerns**\n- **Location**: `demo/load_generator.py` → `weighted_choice(endpoints)`\n- **Issue**: Function accepts `endpoints` parameter with no visible type hints or validation. If `endpoints` is empty or contains zero-weight items, this likely raises `IndexError` or `ValueError` (common bug in weighted random selection).\n- **Recommendation**: Add guard clause:\n  ```python\n  if not endpoints or all(w == 0 for w in weights):\n      raise ValueError(\"Endpoints list cannot be empty\")\n  ```\n\n### **Inconsistent Return Type Annotations**\n- **Location**: `examples/async-usage/main.py` vs `demo/load_generator.py`\n- **Issue**: `setup_logger` has explicit return type `-> Logger`, but `weighted_choice` lacks both parameter and return type annotations despite being in the same project.\n- **Risk**: Type mismatch when using `weighted_choice` results in runtime errors that mypy could catch.\n\n## 2. Data Flow Issues\n\n### **Missing Input Validation in `create_user`**\n- **Location**: `examples/auto-log/main.py` → `create_user(name: ...)`\n- **Issue**: AST shows typed parameter `name` but no validation logic visible. If this is e...",
+      "llm_quality_keywords": 17,
+      "error": null,
+      "metadata": {
+        "parser": "tree-sitter",
+        "language": "python",
+        "has_native_parser": true
+      }
+    },
+    {
+      "tool": "ast-grep",
+      "target_project": "/project",
+      "tokens_in": 129,
+      "tokens_out": 955,
+      "duration_analysis_sec": 0.01985478401184082,
+      "duration_llm_sec": 63.34520602226257,
+      "duration_total_sec": 63.41503572463989,
+      "context_chars": 52,
+      "raw_code_chars": 373650,
+      "compression_ratio": 0.9998608323297203,
+      "llm_response": " The content you provided appears to be truncated or missing the actual ast-grep rules, search results, or code representation. I can see the document headers:\n\n```markdown\n# ast-grep Structural Analysis\n\n## Security Patterns\n```\n\nHowever, the actual patterns, code snippets, or YAML rule definitions are not included.\n\n**Please provide one of the following:**\n\n1. **The ast-grep YAML rule files** (e.g., `rules/security.yml`, `rules/bug-detection.yml`)\n2. **The search results/output** showing matched code patterns\n3. **The target source code** being analyzed with the ast-grep patterns applied\n4. **A complete markdown report** with code blocks containing the matches\n\n---\n\n**Once provided, I will analyze for:**\n\n### 1. **Logic Errors & Bugs**\n- Incorrect operator precedence in patterns\n- Off-by-one errors in index-based rules\n- Missing null/undefined checks in data flow\n\n### 2. **Data Flow Issues**\n- Unvalidated inputs reaching sensitive operations (sinks)\n- Missing sanitization between sources and sinks\n- Implicit trust boundaries crossed without validation\n\n### 3. **Refactoring Opportunities**\n- Duplicate detection patterns that could be abstracted\n- Overly specific rules that should use generic matchers (`$VAR`, `$FUNC`)\n- High coupling between specific API calls that should be decoupled\n\n### 4. **Security Concerns**\n- SQL injection vectors (concatenated queries)\n- Command injection (unsanitized exec/spawn)\n- XSS vulnerabilities (innerHTML, dangerouslySetInnerHTML)\n- Path traversal (unvalidated file operations)\n- Hardcoded secrets/credentials\n\n### 5. **Performance Issues**\n- O(n²) nested loop patterns\n- Synchronous file I/O in async contexts\n- Memory leaks in closure captures\n- Inefficient regex patterns (catastrophic backtracking)\n\n**Please paste the complete ast-grep representation, and I'll provide specific, actionable recommendations with line references.**",
+      "llm_quality_keywords": 13,
+      "error": null,
+      "metadata": {
+        "patterns_used": 9,
+        "method": "ast-grep"
+      }
+    },
+    {
+      "tool": "radon",
+      "target_project": "/project",
+      "tokens_in": 880,
+      "tokens_out": 2631,
+      "duration_analysis_sec": 72.74613857269287,
+      "duration_llm_sec": 56.786258697509766,
+      "duration_total_sec": 129.58239889144897,
+      "context_chars": 2546,
+      "raw_code_chars": 373650,
+      "compression_ratio": 0.993186136758999,
+      "llm_response": "Based on this Radon complexity report, here is my analysis. **Critical Note**: Your analysis scope is severely polluted with third-party dependencies (`venv/`) and build artifacts (`build/`), which obscures actual project risks.\n\n## 1. Critical Analysis Configuration Errors\n\n**Issue**: 99% of your \"high complexity\" findings are false positives from dependencies.\n- **763 High Complexity functions** are entirely within `site-packages/` (Pygments, Rich, Markdown-it, etc.)\n- **Duplicate analysis**: Files analyzed twice (e.g., `/project/nfo/configure.py` and `/project/build/lib/nfo/configure.py`)\n\n**Action**: Reconfigure Radon to exclude:\n```bash\n# Add to radon.cfg or command line\n--exclude venv,build,dist,*.egg-info,tests\n```\n\n## 2. Actual Code Quality Issues (Project: `/project/nfo/`)\n\nAfter filtering for your actual source code (`/project/nfo/`), these hotspots require immediate attention:\n\n### A. `configure.py:_parse_sink_spec()` (CC=10)\n**Risk**: Configuration injection / Logic errors\n- **Bug Pattern**: CC=10 in configuration parsing suggests deeply nested conditionals parsing DSL syntax without proper tokenization.\n- **Data Flow Issue**: Likely lacks validation for malformed sink specifications (missing required fields, invalid characters).\n- **Refactor**: Replace nested `if/elif` chains with a **Strategy Pattern** or lookup table:\n  ```python\n  # Instead of nested conditionals\n  _SINK_PARSERS = {\n      'file': _parse_file_sink,\n      'grpc': _parse_grpc_sink,\n      'http': _parse_http_sink,\n  }\n  ```\n\n### B. `extractors.py:extract_image_meta()` (CC=10)\n**Risk**: Security vulnerabilities / Resource exhaustion\n- **Security Concern**: High complexity in image metadata extraction indicates parsing multiple binary formats (EXIF, IPTC, XMP) manually. This is a classic attack surface for:\n  - Buffer overflow equivalents (Python memory exhaustion via crafted images)\n  - Path traversal via malformed metadata\n  - XXE if parsing XML-based XMP metadata\n- **Data Flow Issue**: ...",
+      "llm_quality_keywords": 19,
+      "error": null,
+      "metadata": {
+        "metrics": [
+          "cyclomatic_complexity",
+          "maintainability_index",
+          "raw_metrics",
+          "halstead"
+        ]
+      }
+    },
+    {
+      "tool": "bandit",
+      "target_project": "/project",
+      "tokens_in": 114,
+      "tokens_out": 2676,
+      "duration_analysis_sec": 92.65068054199219,
+      "duration_llm_sec": 59.95792746543884,
+      "duration_total_sec": 152.65891432762146,
+      "context_chars": 26,
+      "raw_code_chars": 373650,
+      "compression_ratio": 0.9999304161648601,
+      "llm_response": "The Bandit security analysis output appears to be missing from your request (the content after `# Bandit Security Analysis` is empty). \n\nHowever, as a senior engineer, I'll provide a **comprehensive analysis framework** for interpreting Bandit reports (Python security linter), using common high-severity findings as examples. When you provide the actual report, apply this methodology:\n\n---\n\n## Analysis Framework for Bandit Security Reports\n\n### 1. Critical Security Findings (High Severity)\n\n#### **B608: Hardcoded SQL Queries (SQL Injection)**\n```python\n# Bandit finding: Possible SQL injection vector through string-based query construction\ndef get_user(user_id):\n    query = \"SELECT * FROM users WHERE id = \" + user_id  # B608\n    cursor.execute(query)\n```\n\n**Issues Identified:**\n- **Security**: SQL injection via string concatenation\n- **Data Flow**: No input validation/sanitization on `user_id` parameter\n- **Bug**: Potential for data exfiltration or schema manipulation\n- **Refactoring**: \n  - Use parameterized queries: `cursor.execute(\"SELECT * FROM users WHERE id = %s\", (user_id,))`\n  - Implement repository pattern to centralize query construction\n  - Add input validation layer (UUID/int validation) before DB call\n\n#### **B307: Eval/Exec Usage (Code Injection)**\n```python\n# Bandit finding: Use of eval detected\ndef process_formula(formula, user_input):\n    result = eval(formula + user_input)  # B307\n```\n\n**Issues Identified:**\n- **Security**: Arbitrary code execution\n- **Data Flow**: `user_input` taint reaches execution context without sandboxing\n- **Refactoring**: \n  - Replace with `ast.literal_eval()` for literals only\n  - Use `json.loads()` for JSON data\n  - Implement domain-specific language (DSL) parser instead of Python eval\n\n#### **B301: Pickle/Deserialization**\n```python\n# Bandit finding: Pickle and modules that wrap it can be unsafe\ndef load_session(data):\n    return pickle.loads(base64.b64decode(data))  # B301\n```\n\n**Issues Identified:**\n- **Security**: Remot...",
+      "llm_quality_keywords": 18,
+      "error": null,
+      "metadata": {
+        "focus": "security_vulnerabilities",
+        "categories": [
+          "injection",
+          "xss",
+          "crypto",
+          "deserialization",
+          "secrets"
+        ]
+      }
     }
   ],
-  "tools_count": 3,
+  "tools_count": 8,
   "errors_count": 0
 }

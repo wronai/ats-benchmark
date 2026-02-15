@@ -13,6 +13,11 @@ BENCHMARK_DIRS = [
     "benchmarks/code2logic",
     "benchmarks/nfo",
     "benchmarks/baseline",
+    "benchmarks/callgraph",
+    "benchmarks/treesitter",
+    "benchmarks/astgrep",
+    "benchmarks/radon",
+    "benchmarks/bandit",
 ]
 
 REPAIR_DIRS = [
