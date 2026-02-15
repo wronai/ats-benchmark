@@ -59,7 +59,7 @@ env-check: ## Verify .env is configured
 # Docker
 # ---------------------------------------------------------------------------
 
-all: build benchmark-all results ## Build + benchmark + results
+all: benchmark-all results ## Build + benchmark + results
 
 build: ## Build all Docker images
 	docker compose build
@@ -72,7 +72,7 @@ check-llm: ## Check LLM connection before benchmarks
 	@echo "=== LLM connection check (docker) ==="
 	docker compose run --rm baseline-bench python -c 'import sys; from benchmarks.common import check_llm_connection; result = check_llm_connection(); sys.exit(0 if result.get("success") else 1)'
 
-benchmark-all: check-llm benchmark-code2logic benchmark-nfo benchmark-baseline benchmark-callgraph benchmark-treesitter benchmark-astgrep benchmark-radon benchmark-bandit ## Run all benchmarks
+benchmark-all: build check-llm benchmark-code2logic benchmark-nfo benchmark-baseline benchmark-callgraph benchmark-treesitter benchmark-astgrep benchmark-radon benchmark-bandit ## Build and run all benchmarks
 	@echo ""
 	@echo "All benchmarks completed. Run: make results"
 
