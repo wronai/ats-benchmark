@@ -1,3 +1,24 @@
+## [1.0.3] - 2026-02-15
+
+### Summary
+
+refactor(build): deep code analysis engine with 6 supporting modules
+
+### Other
+
+- update .env.example
+- build: update Makefile
+- update benchmark_summary.json
+- docker: update Dockerfile
+- build: update Makefile
+- update benchmarks/astgrep/__init__.py
+- update benchmarks/astgrep/benchmark.py
+- update benchmarks/astgrep/requirements.txt
+- docker: update Dockerfile
+- build: update Makefile
+- ... and 22 more
+
+
 ## [1.0.2] - 2026-02-15
 
 ### Summary

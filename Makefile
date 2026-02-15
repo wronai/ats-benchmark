@@ -7,8 +7,10 @@
 #   make results
 
 .PHONY: all setup build benchmark-all benchmark-code2logic benchmark-nfo benchmark-baseline \
+        benchmark-callgraph benchmark-treesitter benchmark-astgrep benchmark-radon benchmark-bandit \
         repair repair-code2logic repair-nfo repair-baseline results clean help \
-        local-all local-code2logic local-nfo local-baseline local-repair
+        local-all local-code2logic local-nfo local-baseline local-repair \
+        local-callgraph local-treesitter local-astgrep local-radon local-bandit
 
 # Read TARGET_PROJECT from .env if not passed via CLI
 -include .env
@@ -65,7 +67,7 @@ build: ## Build all Docker images
 # Benchmarks (analysis only — compare compression tools)
 # ---------------------------------------------------------------------------
 
-benchmark-all: benchmark-code2logic benchmark-nfo benchmark-baseline ## Run all benchmarks
+benchmark-all: benchmark-code2logic benchmark-nfo benchmark-baseline benchmark-callgraph benchmark-treesitter benchmark-astgrep benchmark-radon benchmark-bandit ## Run all benchmarks
 	@echo ""
 	@echo "All benchmarks completed. Run: make results"
 
@@ -80,6 +82,26 @@ benchmark-nfo: ## Benchmark: nfo data-flow compression
 benchmark-baseline: ## Benchmark: raw code (no compression)
 	@echo "=== baseline benchmark ==="
 	docker compose run --rm baseline-bench
+
+benchmark-callgraph: ## Benchmark: callgraph compression
+	@echo "=== callgraph benchmark ==="
+	docker compose run --rm callgraph-bench
+
+benchmark-treesitter: ## Benchmark: treesitter AST compression
+	@echo "=== treesitter benchmark ==="
+	docker compose run --rm treesitter-bench
+
+benchmark-astgrep: ## Benchmark: astgrep structural compression
+	@echo "=== astgrep benchmark ==="
+	docker compose run --rm astgrep-bench
+
+benchmark-radon: ## Benchmark: radon complexity compression
+	@echo "=== radon benchmark ==="
+	docker compose run --rm radon-bench
+
+benchmark-bandit: ## Benchmark: bandit security compression
+	@echo "=== bandit benchmark ==="
+	docker compose run --rm bandit-bench
 
 # ---------------------------------------------------------------------------
 # Repair (LLM fixes real problems using each compression tool)
@@ -119,13 +141,28 @@ local-nfo: ## Run nfo benchmark locally
 local-baseline: ## Run baseline benchmark locally
 	python3 -m benchmarks.baseline.benchmark
 
+local-callgraph: ## Run callgraph benchmark locally
+	python3 -m benchmarks.callgraph.benchmark
+
+local-treesitter: ## Run treesitter benchmark locally
+	python3 -m benchmarks.treesitter.benchmark
+
+local-astgrep: ## Run astgrep benchmark locally
+	python3 -m benchmarks.astgrep.benchmark
+
+local-radon: ## Run radon benchmark locally
+	python3 -m benchmarks.radon.benchmark
+
+local-bandit: ## Run bandit benchmark locally
+	python3 -m benchmarks.bandit.benchmark
+
 local-repair: ## Run repair pipeline locally (all tools)
 	python3 -m benchmarks.repair.repair_pipeline --tool all
 
 local-repair-code2logic: ## Run repair locally with code2logic
 	python3 -m benchmarks.repair.repair_pipeline --tool code2logic
 
-local-all: local-code2logic local-nfo local-baseline results ## Run all benchmarks locally
+local-all: local-code2logic local-nfo local-baseline local-callgraph local-treesitter local-astgrep local-radon local-bandit results ## Run all benchmarks locally
 
 # ---------------------------------------------------------------------------
 # Cleanup

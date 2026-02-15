@@ -90,7 +90,8 @@ class RepairResult:
 # ---------------------------------------------------------------------------
 
 def get_model() -> str:
-    return os.getenv("MODEL_ID", "meta-llama/llama-3.2-3b-instruct:free")
+    """Get LLM model ID in format provider/model."""
+    return os.getenv("MODEL_ID", "openrouter/meta-llama/llama-3.2-3b-instruct:free")
 
 
 def get_max_tokens() -> int:
@@ -204,7 +205,7 @@ def call_llm(prompt: str, system: str = "", max_tokens: int = 0) -> Dict[str, An
     start = time.time()
     try:
         response = litellm.completion(
-            model=f"openrouter/{model}",
+            model=model,
             messages=messages,
             max_tokens=max_tokens,
             temperature=temperature,
