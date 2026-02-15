@@ -10,7 +10,8 @@
         benchmark-callgraph benchmark-treesitter benchmark-astgrep benchmark-radon benchmark-bandit \
         repair repair-code2logic repair-nfo repair-baseline results clean help \
         local-all local-code2logic local-nfo local-baseline local-repair \
-        local-callgraph local-treesitter local-astgrep local-radon local-bandit
+        local-callgraph local-treesitter local-astgrep local-radon local-bandit \
+        check-llm
 
 # Read TARGET_PROJECT from .env if not passed via CLI
 -include .env
@@ -67,7 +68,10 @@ build: ## Build all Docker images
 # Benchmarks (analysis only — compare compression tools)
 # ---------------------------------------------------------------------------
 
-benchmark-all: benchmark-code2logic benchmark-nfo benchmark-baseline benchmark-callgraph benchmark-treesitter benchmark-astgrep benchmark-radon benchmark-bandit ## Run all benchmarks
+check-llm: ## Check LLM connection before benchmarks
+	@python3 check_llm.py
+
+benchmark-all: check-llm benchmark-code2logic benchmark-nfo benchmark-baseline benchmark-callgraph benchmark-treesitter benchmark-astgrep benchmark-radon benchmark-bandit ## Run all benchmarks
 	@echo ""
 	@echo "All benchmarks completed. Run: make results"
 

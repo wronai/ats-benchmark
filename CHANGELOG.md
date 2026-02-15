@@ -1,3 +1,18 @@
+## [1.0.6] - 2026-02-15
+
+### Summary
+
+feat(docs): deep code analysis engine with 2 supporting modules
+
+### Docs
+
+- docs: update test-broken-code.md
+
+### Other
+
+- build: update Makefile
+
+
 ## [1.0.5] - 2026-02-15
 
 ### Summary
