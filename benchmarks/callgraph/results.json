@@ -1,0 +1,20 @@
+{
+  "tool": "callgraph",
+  "target_project": "/project",
+  "tokens_in": 228,
+  "tokens_out": 2560,
+  "duration_analysis_sec": 0.30272364616394043,
+  "duration_llm_sec": 75.11793208122253,
+  "duration_total_sec": 75.47509002685547,
+  "context_chars": 502,
+  "raw_code_chars": 373650,
+  "compression_ratio": 0.9986564967215309,
+  "llm_response": "Based on this static call graph representation, there are several **critical anomalies** and architectural concerns. The complete absence of call edges (0 relationships) in a project with test classes strongly suggests either broken static analysis or severe architectural decoupling issues.\n\n## 1. Critical Analysis Issues\n\n**Zero Call Edges in Test Suite**\n- **Anomaly**: `TestPipelineSinkBasic.test_complete_marker_flushes_run` should call `PipelineSink._flush_run`, yet no edge exists\n- **Implications**: \n  - Static analysis tool failed to resolve dynamic dispatches (pytest fixtures, mocks, or `getattr` patterns)\n  - Tests may be using excessive mocking, testing implementation details rather than behavior\n  - Potential import cycles preventing proper graph resolution\n\n**Recommendation**: Verify the analysis tool configuration. If accurate, refactor tests to use explicit imports and reduce monkey-patching.\n\n## 2. Potential Bugs & Logic Errors\n\n### Encapsulation Violation in PipelineSink\n```\nTestPipelineSinkBasic.test_complete_marker_flushes_run\n└── should call ──> PipelineSink._flush_run (private method)\n```\n- **Issue**: Testing private methods (`_flush_run`) violates encapsulation. Tests should verify public behavior (`flush()`, `close()`, or context manager exit).\n- **Risk**: Internal refactoring will break tests even when public API remains stable.\n\n### Missing Error Handling Edges\n- `PipelineSink._flush_run` likely performs I/O (flushing to disk/network), yet no error handling nodes are visible\n- `pending_runs` suggests buffered state without visible timeout or error recovery mechanisms\n\n**Recommendation**: \n- Rename `_flush_run` → `flush_run` if it needs testing, or test via `__exit__`/`close()` methods\n- Add explicit error propagation paths (try/except blocks visible in call graph)\n\n## 3. Data Flow Issues\n\n### Unbounded Buffer Risk\n**PipelineSink** maintains `pending_runs` state without visible:\n- Size limits or backpressure mechanisms\n- TTL (time-to-live) for s...",
+  "llm_quality_keywords": 19,
+  "error": null,
+  "metadata": {
+    "nodes": 1291,
+    "edges": 3559,
+    "entry_points": 6
+  }
+}

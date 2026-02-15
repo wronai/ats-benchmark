@@ -1,0 +1,20 @@
+{
+  "tool": "treesitter",
+  "target_project": "/project",
+  "tokens_in": 759,
+  "tokens_out": 956,
+  "duration_analysis_sec": 0.13439202308654785,
+  "duration_llm_sec": 11.950652599334717,
+  "duration_total_sec": 12.138086080551147,
+  "context_chars": 2113,
+  "raw_code_chars": 373650,
+  "compression_ratio": 0.9943449752442125,
+  "llm_response": "",
+  "llm_quality_keywords": 0,
+  "error": null,
+  "metadata": {
+    "parser": "tree-sitter",
+    "language": "python",
+    "has_native_parser": true
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "tool": "ast-grep",
+  "target_project": "/project",
+  "tokens_in": 122,
+  "tokens_out": 894,
+  "duration_analysis_sec": 0.03621983528137207,
+  "duration_llm_sec": 14.415039539337158,
+  "duration_total_sec": 14.502766847610474,
+  "context_chars": 52,
+  "raw_code_chars": 373650,
+  "compression_ratio": 0.9998608323297203,
+  "llm_response": " The ast-grep representation appears to be **truncated or missing** after the header \"## Security Patterns\". To perform a thorough code review, I need the actual structural search results, including:\n\n- The matched code patterns/rules\n- Source file references\n- Contextual code snippets\n- Node relationships\n\n**Please provide the complete ast-grep output**, which typically includes sections like:\n- Security Patterns (SQL injection, XSS, hardcoded secrets)\n- Error Handling Patterns (empty catch blocks, swallowed exceptions)\n- Data Flow Patterns (unvalidated inputs, unsafe deserialization)\n- Complexity Metrics (nested callbacks, cyclomatic complexity)\n\n---\n\n## What I'll Analyze Once You Provide the Data\n\nWhen you share the complete representation, I'll specifically look for:\n\n### 1. **Security Vulnerabilities**\n- Unsanitized user input flowing into `eval()`, `exec()`, or SQL queries\n- Hardcoded credentials in AST nodes (strings, comments, config objects)\n- Missing CSRF tokens in form handlers\n- Insecure randomness (`Math.random()` for crypto)\n\n### 2. **Data Flow Issues**\n- Unvalidated props/state flowing to dangerous DOM methods (`innerHTML`, `dangerouslySetInnerHTML`)\n- Missing null checks before property access (`obj.prop` where `obj` could be undefined)\n- Unhandled promise rejections or async/await without try-catch\n- User input reaching file system operations (`fs.readFile`, `writeFileSync`)\n\n### 3. **Logic Bugs**\n- Assignment in conditionals (`if (x = y)`)\n- Loose equality checks (`==` instead of `===`) with falsy values\n- Unreachable code after return/throw statements\n- Off-by-one errors in loop bounds\n\n### 4. **Refactoring Opportunities**\n- Duplicate conditional logic across branches\n- Callback hell/pyramid of doom (nested depth > 3)\n- God functions (high cyclomatic complexity)\n- Tight coupling between modules (direct imports of implementation details)\n\n### 5. **Performance Issues**\n- Nested loops with O(n²) complexity\n- Synchronous file I/O in async contexts\n- M...",
+  "llm_quality_keywords": 17,
+  "error": null,
+  "metadata": {
+    "patterns_used": 9,
+    "method": "ast-grep"
+  }
+}

@@ -25,22 +25,19 @@ def _get_parser():
     try:
         from tree_sitter import Language, Parser
 
-        # Try to load Python language
         try:
             import tree_sitter_python as tspython
-            PY_LANGUAGE = Language(tspython.language())
-        except ImportError:
-            # Fallback: try to build from source if available
-            try:
-                from tree_sitter import Language
-                PY_LANGUAGE = Language("python")
-            except Exception:
-                return None
+            py_language = Language(tspython.language())
+        except Exception:
+            return None
 
         parser = Parser()
-        parser.set_language(PY_LANGUAGE)
+        if hasattr(parser, "set_language"):
+            parser.set_language(py_language)
+        else:
+            parser.language = py_language
         return parser
-    except ImportError:
+    except Exception:
         return None
 
 
