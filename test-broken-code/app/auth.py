@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from typing import Any
 
 GLOBAL_COUNTER = 0
-GLOBAL_CACHE = {{}}
+GLOBAL_CACHE = {}
 
 
 def unsafe_sql_lookup(conn: sqlite3.Connection, table: str, user_input: str) -> list[tuple[Any, ...]]:
@@ -89,7 +89,7 @@ def non_atomic_increment(n: int = 1000) -> int:
 class BrokenService:
     def __init__(self, name: str):
         self.name = name
-        self.cache = {{}}
+        self.cache = {}
         self.last_error = None
 
     def compute_score(self, rows: list[dict[str, Any]]) -> float:
