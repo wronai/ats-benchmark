@@ -8,6 +8,8 @@ services:
     env_file: .env
     volumes:
       - ./benchmarks/code2logic:/workspace/benchmarks/code2logic
+      - ../code2logic:/src/code2logic:ro
+      - ${TARGET_PROJECT:-.}:/project:ro
     working_dir: /workspace
 
   nfo-bench:
@@ -17,6 +19,8 @@ services:
     env_file: .env
     volumes:
       - ./benchmarks/nfo:/workspace/benchmarks/nfo
+      - ../nfo:/src/nfo:ro
+      - ${TARGET_PROJECT:-.}:/project:ro
     working_dir: /workspace
 
   baseline-bench:
@@ -26,4 +30,17 @@ services:
     env_file: .env
     volumes:
       - ./benchmarks/baseline:/workspace/benchmarks/baseline
+      - ${TARGET_PROJECT:-.}:/project:ro
+    working_dir: /workspace
+
+  repair-bench:
+    build:
+      context: .
+      dockerfile: benchmarks/repair/Dockerfile
+    env_file: .env
+    volumes:
+      - ./benchmarks/repair:/workspace/benchmarks/repair
+      - ../code2logic:/src/code2logic:ro
+      - ../nfo:/src/nfo:ro
+      - ${TARGET_PROJECT:-.}:/project:ro
     working_dir: /workspace

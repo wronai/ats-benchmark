@@ -6,7 +6,6 @@ import sys
 import time
 from pathlib import Path
 
-# Add parent to path for common imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from benchmarks.common import (
@@ -16,14 +15,14 @@ from benchmarks.common import (
     call_llm,
     count_raw_code_chars,
     evaluate_response_quality,
-    get_sample_app_path,
+    get_target_project,
     save_result,
 )
 
 
 def run_benchmark() -> BenchmarkResult:
     total_start = time.time()
-    app_path = get_sample_app_path()
+    app_path = get_target_project()
     raw_chars = count_raw_code_chars(app_path)
 
     # Phase 1: Analyze with code2logic
@@ -79,6 +78,7 @@ def run_benchmark() -> BenchmarkResult:
 
     result = BenchmarkResult(
         tool="code2logic",
+        target_project=str(app_path),
         tokens_in=llm_result["tokens_in"],
         tokens_out=llm_result["tokens_out"],
         duration_analysis_sec=analysis_duration,

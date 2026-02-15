@@ -1,51 +1,140 @@
-.PHONY: all build benchmark-all benchmark-code2logic benchmark-nfo benchmark-baseline results clean help
+# ats-benchmark Makefile
+# Usage:
+#   make setup TARGET=/home/tom/github/wronai/nfo
+#   make setup TARGET=/home/tom/github/wronai/nfo PROBLEM="parser logów nie grupuje po trace_id"
+#   make benchmark-all
+#   make repair
+#   make results
+
+.PHONY: all setup build benchmark-all benchmark-code2logic benchmark-nfo benchmark-baseline \
+        repair repair-code2logic repair-nfo repair-baseline results clean help \
+        local-all local-code2logic local-nfo local-baseline local-repair
+
+# Read TARGET_PROJECT from .env if not passed via CLI
+-include .env
+export
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-25s\033[0m %s\n", $$1, $$2}'
 
-all: build benchmark-all results ## Build, run all benchmarks, show results
+# ---------------------------------------------------------------------------
+# Setup
+# ---------------------------------------------------------------------------
+
+setup: ## Configure target project: make setup TARGET=/path/to/project [PROBLEM="description"]
+	@if [ -z "$(TARGET)" ]; then \
+		echo "ERROR: TARGET is required. Usage: make setup TARGET=/path/to/project"; \
+		exit 1; \
+	fi
+	@if [ ! -d "$(TARGET)" ]; then \
+		echo "ERROR: Directory not found: $(TARGET)"; \
+		exit 1; \
+	fi
+	@if [ ! -f .env ]; then cp .env.example .env; echo "Created .env from .env.example"; fi
+	@sed -i 's|^TARGET_PROJECT=.*|TARGET_PROJECT=$(TARGET)|' .env
+	@if [ -n "$(PROBLEM)" ]; then \
+		sed -i 's|^PROBLEM_DESCRIPTION=.*|PROBLEM_DESCRIPTION=$(PROBLEM)|' .env; \
+	fi
+	@echo ""
+	@echo "=== Configuration saved to .env ==="
+	@echo "  TARGET_PROJECT=$(TARGET)"
+	@test -n "$(PROBLEM)" && echo "  PROBLEM_DESCRIPTION=$(PROBLEM)" || true
+	@echo ""
+	@echo "Next steps:"
+	@echo "  1. Edit .env — set OPENROUTER_API_KEY=sk-or-v1-..."
+	@echo "  2. make benchmark-all   # Compare compression tools"
+	@echo "  3. make repair          # LLM fixes real problems"
+	@echo "  4. make results         # Show comparison"
+
+env-check: ## Verify .env is configured
+	@test -f .env || (echo "ERROR: .env not found. Run: make setup TARGET=/path/to/project" && exit 1)
+	@grep -q "OPENROUTER_API_KEY=sk-or-v" .env || echo "WARNING: OPENROUTER_API_KEY may not be set"
+	@grep -q "TARGET_PROJECT=/" .env || echo "WARNING: TARGET_PROJECT not set. Run: make setup TARGET=/path"
+	@echo ".env OK"
+
+# ---------------------------------------------------------------------------
+# Docker
+# ---------------------------------------------------------------------------
+
+all: build benchmark-all results ## Build + benchmark + results
 
 build: ## Build all Docker images
 	docker compose build
 
-benchmark-all: benchmark-code2logic benchmark-nfo benchmark-baseline ## Run all benchmarks sequentially
-	@echo ""
-	@echo "All benchmarks completed."
+# ---------------------------------------------------------------------------
+# Benchmarks (analysis only — compare compression tools)
+# ---------------------------------------------------------------------------
 
-benchmark-code2logic: ## Run code2logic benchmark
-	@echo "=== Running code2logic benchmark ==="
+benchmark-all: benchmark-code2logic benchmark-nfo benchmark-baseline ## Run all benchmarks
+	@echo ""
+	@echo "All benchmarks completed. Run: make results"
+
+benchmark-code2logic: ## Benchmark: code2logic compression
+	@echo "=== code2logic benchmark ==="
 	docker compose run --rm code2logic-bench
 
-benchmark-nfo: ## Run nfo benchmark
-	@echo "=== Running nfo benchmark ==="
+benchmark-nfo: ## Benchmark: nfo data-flow compression
+	@echo "=== nfo benchmark ==="
 	docker compose run --rm nfo-bench
 
-benchmark-baseline: ## Run baseline (raw code) benchmark
-	@echo "=== Running baseline benchmark ==="
+benchmark-baseline: ## Benchmark: raw code (no compression)
+	@echo "=== baseline benchmark ==="
 	docker compose run --rm baseline-bench
 
-results: ## Analyze and compare results
-	@echo "=== Benchmark Results ==="
+# ---------------------------------------------------------------------------
+# Repair (LLM fixes real problems using each compression tool)
+# ---------------------------------------------------------------------------
+
+repair: ## Run LLM repair with all tools (code2logic, nfo, baseline)
+	@echo "=== LLM Repair Pipeline ==="
+	docker compose run --rm repair-bench --tool all
+
+repair-code2logic: ## Repair using code2logic context
+	docker compose run --rm repair-bench --tool code2logic
+
+repair-nfo: ## Repair using nfo context
+	docker compose run --rm repair-bench --tool nfo
+
+repair-baseline: ## Repair using raw code context
+	docker compose run --rm repair-bench --tool baseline
+
+# ---------------------------------------------------------------------------
+# Results
+# ---------------------------------------------------------------------------
+
+results: ## Show benchmark + repair comparison
+	@echo "=== Results ==="
 	python3 analyze_results.py
+
+# ---------------------------------------------------------------------------
+# Local (no Docker)
+# ---------------------------------------------------------------------------
+
+local-code2logic: ## Run code2logic benchmark locally
+	python3 -m benchmarks.code2logic.benchmark
+
+local-nfo: ## Run nfo benchmark locally
+	python3 -m benchmarks.nfo.benchmark
+
+local-baseline: ## Run baseline benchmark locally
+	python3 -m benchmarks.baseline.benchmark
+
+local-repair: ## Run repair pipeline locally (all tools)
+	python3 -m benchmarks.repair.repair_pipeline --tool all
+
+local-repair-code2logic: ## Run repair locally with code2logic
+	python3 -m benchmarks.repair.repair_pipeline --tool code2logic
+
+local-all: local-code2logic local-nfo local-baseline results ## Run all benchmarks locally
+
+# ---------------------------------------------------------------------------
+# Cleanup
+# ---------------------------------------------------------------------------
 
 clean: ## Remove results and Docker images
 	rm -f benchmarks/*/results.json
+	rm -f benchmarks/*/repair_result.json
+	rm -rf benchmarks/repair/*/fixes/
 	rm -f benchmarks/*/runtime_logs.jsonl
 	rm -f benchmark_summary.json
 	docker compose down --rmi local --volumes 2>/dev/null || true
-
-env-check: ## Verify .env is configured
-	@test -f .env || (echo "ERROR: .env file not found. Copy .env.example to .env and set OPENROUTER_API_KEY" && exit 1)
-	@grep -q "OPENROUTER_API_KEY=sk-or" .env || echo "WARNING: OPENROUTER_API_KEY may not be set in .env"
-	@echo ".env OK"
-
-local-code2logic: ## Run code2logic benchmark locally (no Docker)
-	cd $(CURDIR) && python -m benchmarks.code2logic.benchmark
-
-local-nfo: ## Run nfo benchmark locally (no Docker)
-	cd $(CURDIR) && python -m benchmarks.nfo.benchmark
-
-local-baseline: ## Run baseline benchmark locally (no Docker)
-	cd $(CURDIR) && python -m benchmarks.baseline.benchmark
-
-local-all: local-code2logic local-nfo local-baseline results ## Run all benchmarks locally

@@ -15,6 +15,12 @@ BENCHMARK_DIRS = [
     "benchmarks/baseline",
 ]
 
+REPAIR_DIRS = [
+    "benchmarks/repair/code2logic",
+    "benchmarks/repair/nfo",
+    "benchmarks/repair/baseline",
+]
+
 
 def load_results() -> List[Dict[str, Any]]:
     """Load results.json from each benchmark directory."""
@@ -22,6 +28,21 @@ def load_results() -> List[Dict[str, Any]]:
     root = Path(__file__).parent
     for bdir in BENCHMARK_DIRS:
         result_file = root / bdir / "results.json"
+        if result_file.exists():
+            try:
+                data = json.loads(result_file.read_text(encoding="utf-8"))
+                results.append(data)
+            except Exception as e:
+                print(f"Warning: failed to load {result_file}: {e}", file=sys.stderr)
+    return results
+
+
+def load_repair_results() -> List[Dict[str, Any]]:
+    """Load repair_result.json from each repair directory."""
+    results = []
+    root = Path(__file__).parent
+    for rdir in REPAIR_DIRS:
+        result_file = root / rdir / "repair_result.json"
         if result_file.exists():
             try:
                 data = json.loads(result_file.read_text(encoding="utf-8"))
@@ -141,10 +162,82 @@ def save_summary_json(results: List[Dict[str, Any]]) -> None:
     print(f"Summary saved to: {output}")
 
 
+def print_repair_table(repairs: List[Dict[str, Any]]) -> None:
+    """Print repair results comparison."""
+    if not repairs:
+        return
+
+    print()
+    print("=" * 90)
+    print("ATS BENCHMARK — REPAIR RESULTS")
+    print("=" * 90)
+    print()
+
+    target = repairs[0].get("target_project", "?")
+    problem = repairs[0].get("problem", "?")
+    print(f"Target:  {target}")
+    print(f"Problem: {problem[:120]}")
+    print()
+
+    headers = ["Tool", "Tokens In", "Tokens Out", "Duration (s)", "Files Fixed", "Has Test", "Status"]
+    widths = [14, 11, 11, 12, 12, 9, 20]
+
+    header_line = " | ".join(h.ljust(w) for h, w in zip(headers, widths))
+    print(header_line)
+    print("-" * len(header_line))
+
+    for r in repairs:
+        tool = r.get("tool", "?")
+        tokens_in = r.get("tokens_in", 0)
+        tokens_out = r.get("tokens_out", 0)
+        duration = r.get("duration_sec", 0)
+        fixed_files = r.get("fixed_files", {})
+        test_code = r.get("test_code", "")
+        error = r.get("error")
+
+        status = "ERROR" if error else ("OK" if fixed_files else "NO FIX")
+        has_test = "yes" if test_code.strip() else "no"
+
+        row = [
+            tool.ljust(widths[0]),
+            str(tokens_in).rjust(widths[1]),
+            str(tokens_out).rjust(widths[2]),
+            f"{duration:.2f}".rjust(widths[3]),
+            str(len(fixed_files)).rjust(widths[4]),
+            has_test.center(widths[5]),
+            status.ljust(widths[6]),
+        ]
+        print(" | ".join(row))
+
+    print()
+
+    # Show diagnoses
+    for r in repairs:
+        diag = r.get("diagnosis", "")
+        if diag:
+            print(f"[{r['tool']}] Diagnosis: {diag[:200]}")
+    print()
+
+    # Show errors
+    errors = [(r["tool"], r["error"]) for r in repairs if r.get("error")]
+    if errors:
+        print("ERRORS:")
+        for tool, err in errors:
+            print(f"  [{tool}] {err[:100]}")
+        print()
+
+    print("=" * 90)
+
+
 def main():
     results = load_results()
     print_comparison_table(results)
-    if results:
+
+    repairs = load_repair_results()
+    print_repair_table(repairs)
+
+    all_data = results + repairs
+    if all_data:
         save_summary_json(results)
 
 

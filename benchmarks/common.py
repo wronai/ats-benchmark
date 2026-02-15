@@ -13,10 +13,36 @@ from typing import Any, Dict, List, Optional
 import litellm
 
 
+# ---------------------------------------------------------------------------
+# .env loading
+# ---------------------------------------------------------------------------
+
+def _load_env() -> None:
+    """Load .env from workspace root (works in Docker and locally)."""
+    for candidate in [Path("/workspace/.env"), Path(__file__).parent.parent / ".env"]:
+        if candidate.exists():
+            for line in candidate.read_text().splitlines():
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                key, _, val = line.partition("=")
+                key, val = key.strip(), val.strip()
+                if key and val and key not in os.environ:
+                    os.environ[key] = val
+            break
+
+_load_env()
+
+
+# ---------------------------------------------------------------------------
+# Data classes
+# ---------------------------------------------------------------------------
+
 @dataclass
 class BenchmarkResult:
     """Single benchmark run result."""
     tool: str
+    target_project: str = ""
     tokens_in: int = 0
     tokens_out: int = 0
     duration_analysis_sec: float = 0.0
@@ -32,22 +58,66 @@ class BenchmarkResult:
 
     def to_dict(self) -> Dict[str, Any]:
         d = asdict(self)
-        # Truncate llm_response for JSON output
-        if len(d["llm_response"]) > 500:
-            d["llm_response"] = d["llm_response"][:500] + "..."
+        if len(d["llm_response"]) > 2000:
+            d["llm_response"] = d["llm_response"][:2000] + "..."
         return d
 
+
+@dataclass
+class RepairResult:
+    """Result of an LLM repair attempt."""
+    tool: str
+    target_project: str
+    problem: str
+    diagnosis: str = ""
+    fixed_files: Dict[str, str] = field(default_factory=dict)
+    test_code: str = ""
+    tokens_in: int = 0
+    tokens_out: int = 0
+    duration_sec: float = 0.0
+    error: Optional[str] = None
+
+    def to_dict(self) -> Dict[str, Any]:
+        d = asdict(self)
+        for fname, content in d["fixed_files"].items():
+            if len(content) > 5000:
+                d["fixed_files"][fname] = content[:5000] + "\n# ... truncated"
+        return d
+
+
+# ---------------------------------------------------------------------------
+# Config helpers
+# ---------------------------------------------------------------------------
 
 def get_model() -> str:
     return os.getenv("MODEL_ID", "meta-llama/llama-3.2-3b-instruct:free")
 
 
 def get_max_tokens() -> int:
-    return int(os.getenv("MAX_TOKENS", "2048"))
+    return int(os.getenv("MAX_TOKENS", "4096"))
 
 
 def get_temperature() -> float:
     return float(os.getenv("TEMPERATURE", "0.1"))
+
+
+def get_target_project() -> Path:
+    """Return TARGET_PROJECT path from env, falling back to sample-app."""
+    target = os.getenv("TARGET_PROJECT", "").strip()
+    if target:
+        p = Path(target)
+        if p.exists():
+            return p
+        # Docker mount path
+        if Path("/project").exists():
+            return Path("/project")
+        raise FileNotFoundError(f"TARGET_PROJECT not found: {target}")
+    return get_sample_app_path()
+
+
+def get_problem_description() -> str:
+    """Return PROBLEM_DESCRIPTION from env or empty string for auto-detect."""
+    return os.getenv("PROBLEM_DESCRIPTION", "").strip()
 
 
 def get_sample_app_path() -> Path:
@@ -62,31 +132,60 @@ def get_sample_app_path() -> Path:
     raise FileNotFoundError("sample-app not found")
 
 
-def read_all_source_files(app_path: Path) -> str:
-    """Read all Python source files from sample-app."""
+# ---------------------------------------------------------------------------
+# Source reading
+# ---------------------------------------------------------------------------
+
+SOURCE_EXTENSIONS = {".py", ".js", ".ts", ".go", ".rs", ".java", ".rb", ".php", ".c", ".cpp", ".h"}
+
+
+def read_all_source_files(app_path: Path, max_chars: int = 0) -> str:
+    """Read all source files from a project directory."""
     sources = []
-    for py_file in sorted(app_path.rglob("*.py")):
-        rel = py_file.relative_to(app_path)
-        content = py_file.read_text(encoding="utf-8", errors="ignore")
+    total = 0
+    for src_file in sorted(app_path.rglob("*")):
+        if not src_file.is_file():
+            continue
+        if src_file.suffix.lower() not in SOURCE_EXTENSIONS:
+            continue
+        if any(part.startswith(".") or part in (
+            "node_modules", "__pycache__", "venv", ".venv", "dist", "build",
+            ".git", ".idea", ".tox", ".mypy_cache",
+        ) for part in src_file.parts):
+            continue
+        content = src_file.read_text(encoding="utf-8", errors="ignore")
+        rel = src_file.relative_to(app_path)
         sources.append(f"# === {rel} ===\n{content}")
+        total += len(content)
+        if max_chars and total > max_chars:
+            sources.append(f"# ... truncated at {max_chars} chars ({total} total)")
+            break
     return "\n\n".join(sources)
 
 
 def count_raw_code_chars(app_path: Path) -> int:
     """Count total characters in all source files."""
     total = 0
-    for py_file in app_path.rglob("*.py"):
-        total += len(py_file.read_text(encoding="utf-8", errors="ignore"))
+    for src_file in app_path.rglob("*"):
+        if src_file.is_file() and src_file.suffix.lower() in SOURCE_EXTENSIONS:
+            if not any(part.startswith(".") or part in (
+                "node_modules", "__pycache__", "venv", ".venv", "dist", "build",
+            ) for part in src_file.parts):
+                total += len(src_file.read_text(encoding="utf-8", errors="ignore"))
     return total
 
 
-def call_llm(prompt: str, system: str = "") -> Dict[str, Any]:
+# ---------------------------------------------------------------------------
+# LLM call
+# ---------------------------------------------------------------------------
+
+def call_llm(prompt: str, system: str = "", max_tokens: int = 0) -> Dict[str, Any]:
     """Call LLM via litellm with OpenRouter and return response + metrics."""
     model = get_model()
-    max_tokens = get_max_tokens()
+    if not max_tokens:
+        max_tokens = get_max_tokens()
     temperature = get_temperature()
 
-    # Ensure OpenRouter routing
     api_key = os.getenv("OPENROUTER_API_KEY", "")
     if not api_key:
         return {
@@ -136,6 +235,10 @@ def call_llm(prompt: str, system: str = "") -> Dict[str, Any]:
         }
 
 
+# ---------------------------------------------------------------------------
+# Quality evaluation
+# ---------------------------------------------------------------------------
+
 def evaluate_response_quality(response: str) -> int:
     """Simple quality score: count relevant analysis keywords in response."""
     keywords = [
@@ -151,6 +254,10 @@ def evaluate_response_quality(response: str) -> int:
     return sum(1 for kw in keywords if kw in response_lower)
 
 
+# ---------------------------------------------------------------------------
+# Result persistence
+# ---------------------------------------------------------------------------
+
 def save_result(result: BenchmarkResult, output_dir: Path) -> None:
     """Save benchmark result to JSON file."""
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -158,12 +265,42 @@ def save_result(result: BenchmarkResult, output_dir: Path) -> None:
     data = result.to_dict()
     output_file.write_text(json.dumps(data, indent=2, ensure_ascii=False))
     print(f"[{result.tool}] Results saved to {output_file}")
+    print(f"  target={result.target_project}")
     print(f"  tokens_in={result.tokens_in}, tokens_out={result.tokens_out}")
     print(f"  context_chars={result.context_chars}, compression={result.compression_ratio:.1%}")
     print(f"  duration_total={result.duration_total_sec:.2f}s")
     if result.error:
         print(f"  ERROR: {result.error}")
 
+
+def save_repair_result(result: RepairResult, output_dir: Path) -> None:
+    """Save repair result to JSON and write fixed files to output_dir/fixes/."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_file = output_dir / "repair_result.json"
+    output_file.write_text(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+
+    # Write fixed files
+    if result.fixed_files:
+        fixes_dir = output_dir / "fixes"
+        fixes_dir.mkdir(parents=True, exist_ok=True)
+        for fname, content in result.fixed_files.items():
+            safe_name = fname.replace("/", "__").replace("\\", "__")
+            (fixes_dir / safe_name).write_text(content, encoding="utf-8")
+
+    print(f"[{result.tool}] Repair result saved to {output_file}")
+    print(f"  target={result.target_project}")
+    print(f"  problem={result.problem[:80]}")
+    print(f"  diagnosis={result.diagnosis[:120]}")
+    print(f"  fixed_files={list(result.fixed_files.keys())}")
+    print(f"  tokens_in={result.tokens_in}, tokens_out={result.tokens_out}")
+    print(f"  duration={result.duration_sec:.2f}s")
+    if result.error:
+        print(f"  ERROR: {result.error}")
+
+
+# ---------------------------------------------------------------------------
+# Prompt templates
+# ---------------------------------------------------------------------------
 
 ANALYSIS_SYSTEM_PROMPT = """You are a senior software engineer performing code review.
 Analyze the provided code representation and identify:
@@ -175,7 +312,40 @@ Analyze the provided code representation and identify:
 
 Be specific and reference function/class names. Provide actionable recommendations."""
 
-ANALYSIS_USER_PROMPT_TEMPLATE = """Analyze this {tool_name} representation of a Python e-commerce application.
+ANALYSIS_USER_PROMPT_TEMPLATE = """Analyze this {tool_name} representation of a project.
 Find bugs, data flow issues, and refactoring opportunities.
 
 {context}"""
+
+REPAIR_SYSTEM_PROMPT = """You are a senior software engineer fixing a real bug in a production codebase.
+You will receive:
+1. A compressed code representation (structure, functions, data flow)
+2. A specific problem description
+
+Your task:
+- Diagnose the root cause
+- Write the COMPLETE fixed source code for each file that needs changes
+- Write a test that verifies the fix
+- Explain the fix concisely
+
+IMPORTANT: Output valid JSON with this exact schema:
+{
+  "diagnosis": "Root cause explanation",
+  "fixed_files": {"relative/path/to/file.py": "complete file content..."},
+  "test_code": "import pytest\\ndef test_fix(): ...",
+  "summary": "One-line summary of the fix"
+}"""
+
+REPAIR_USER_PROMPT_TEMPLATE = """Fix the following problem in project "{project_name}".
+
+## Problem
+{problem}
+
+## Code Context ({tool_name})
+{context}
+
+## Instructions
+1. Diagnose the root cause based on the code context above
+2. Write COMPLETE fixed file(s) — not patches, full files
+3. Write a pytest test that verifies the fix
+4. Return valid JSON as specified in the system prompt"""

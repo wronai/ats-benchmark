@@ -15,7 +15,7 @@ from benchmarks.common import (
     call_llm,
     count_raw_code_chars,
     evaluate_response_quality,
-    get_sample_app_path,
+    get_target_project,
     read_all_source_files,
     save_result,
 )
@@ -23,12 +23,12 @@ from benchmarks.common import (
 
 def run_benchmark() -> BenchmarkResult:
     total_start = time.time()
-    app_path = get_sample_app_path()
+    app_path = get_target_project()
     raw_chars = count_raw_code_chars(app_path)
 
     # Phase 1: Just read raw source code (no analysis)
     analysis_start = time.time()
-    context = read_all_source_files(app_path)
+    context = read_all_source_files(app_path, max_chars=100000)
     analysis_duration = time.time() - analysis_start
 
     # Phase 2: Send raw code to LLM
@@ -43,6 +43,7 @@ def run_benchmark() -> BenchmarkResult:
 
     result = BenchmarkResult(
         tool="baseline-raw",
+        target_project=str(app_path),
         tokens_in=llm_result["tokens_in"],
         tokens_out=llm_result["tokens_out"],
         duration_analysis_sec=analysis_duration,

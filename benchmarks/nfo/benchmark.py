@@ -17,7 +17,7 @@ from benchmarks.common import (
     call_llm,
     count_raw_code_chars,
     evaluate_response_quality,
-    get_sample_app_path,
+    get_target_project,
     save_result,
 )
 
@@ -80,9 +80,12 @@ def _analyze_with_nfo(app_path: Path) -> str:
         lines.append("# Data Flow Analysis (nfo)")
         lines.append("## Module Dependencies")
 
+        _SKIP_DIRS = {"__pycache__", "venv", ".venv", "dist", "build", ".git", ".tox", ".mypy_cache", "node_modules", ".idea"}
         imports_map = {}
         for py_file in sorted(app_path.rglob("*.py")):
             if py_file.name == "__init__.py":
+                continue
+            if any(part in _SKIP_DIRS or part.startswith(".") for part in py_file.relative_to(app_path).parts):
                 continue
             rel = py_file.relative_to(app_path)
             content = py_file.read_text(encoding="utf-8", errors="ignore")
@@ -134,13 +137,6 @@ def _analyze_with_nfo(app_path: Path) -> str:
                 for imp in imports[:5]:
                     lines.append(f"    <- {imp}")
 
-        # Add runtime flow simulation
-        lines.append("\n## Simulated Call Flow")
-        lines.append("  main() -> setup_catalog() -> ProductCatalog.add_product()")
-        lines.append("  main() -> ShoppingCart.add_item() -> Product.is_available()")
-        lines.append("  main() -> OrderService.create_order() -> PaymentProcessor.process_payment()")
-        lines.append("  OrderService.create_order() -> Product.reserve() -> Order.confirm()")
-        lines.append("  OrderService.create_order() -> Customer.earn_points()")
 
         return "\n".join(lines)
 
@@ -150,7 +146,7 @@ def _analyze_with_nfo(app_path: Path) -> str:
 
 def run_benchmark() -> BenchmarkResult:
     total_start = time.time()
-    app_path = get_sample_app_path()
+    app_path = get_target_project()
     raw_chars = count_raw_code_chars(app_path)
 
     # Phase 1: Analyze with nfo
@@ -176,6 +172,7 @@ def run_benchmark() -> BenchmarkResult:
 
     result = BenchmarkResult(
         tool="nfo",
+        target_project=str(app_path),
         tokens_in=llm_result["tokens_in"],
         tokens_out=llm_result["tokens_out"],
         duration_analysis_sec=analysis_duration,

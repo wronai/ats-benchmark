@@ -1,0 +1,19 @@
+{
+  "tool": "code2logic",
+  "target_project": "/project",
+  "tokens_in": 0,
+  "tokens_out": 0,
+  "duration_analysis_sec": 6.242414712905884,
+  "duration_llm_sec": 0.7431862354278564,
+  "duration_total_sec": 7.036725997924805,
+  "context_chars": 153751,
+  "raw_code_chars": 373650,
+  "compression_ratio": 0.5885159909005754,
+  "llm_response": "",
+  "llm_quality_keywords": 0,
+  "error": "litellm.BadRequestError: OpenrouterException - {\"error\":{\"message\":\"openrouter/x-ai/grok-code-fast-1 is not a valid model ID\",\"code\":400},\"user_id\":\"user_37kQZ4yXt4hnDnJeX7tzyA2hBlP\"}",
+  "metadata": {
+    "parser": "tree-sitter",
+    "format": "compact+function_logic"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "tool": "nfo",
+  "target_project": "/home/tom/github/wronai/nfo",
+  "tokens_in": 0,
+  "tokens_out": 0,
+  "duration_analysis_sec": 0.08434939384460449,
+  "duration_llm_sec": 1.0325462818145752,
+  "duration_total_sec": 1.1768014430999756,
+  "context_chars": 45673,
+  "raw_code_chars": 373650,
+  "compression_ratio": 0.8777652883714706,
+  "llm_response": "",
+  "llm_quality_keywords": 0,
+  "error": "litellm.RateLimitError: RateLimitError: OpenrouterException - {\"error\":{\"message\":\"Provider returned error\",\"code\":429,\"metadata\":{\"raw\":\"meta-llama/llama-3.2-3b-instruct:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations\",\"provider_name\":\"Venice\",\"is_byok\":false}},\"user_id\":\"user_37kQZ4yXt4hnDnJeX7tzyA2hBlP\"}",
+  "metadata": {
+    "mode": "data_flow+runtime",
+    "has_runtime_logs": false
+  }
+}

@@ -2,8 +2,7 @@ FROM python:3.12-slim
 
 WORKDIR /workspace
 
-COPY benchmarks/baseline/requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt
+RUN pip install --no-cache-dir litellm>=1.44
 
 # Copy workspace
 COPY . /workspace/

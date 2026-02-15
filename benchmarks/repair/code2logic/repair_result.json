@@ -1,0 +1,12 @@
+{
+  "tool": "code2logic",
+  "target_project": "/home/tom/github/wronai/nfo",
+  "problem": "Brak parsera logów do data flow - LogFlowParser nie istnieje, brak grupowania po trace_id, brak kompresji logów do grafu dla LLM",
+  "diagnosis": "LLM call failed: litellm.RateLimitError: RateLimitError: OpenrouterException - {\"error\":{\"message\":\"Provider returned error\",\"code\":429,\"metadata\":{\"raw\":\"meta-llama/llama-3.2-3b-instruct:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations\",\"provider_name\":\"Venice\",\"is_byok\":false}},\"user_id\":\"user_37kQZ4yXt4hnDnJeX7tzyA2hBlP\"}",
+  "fixed_files": {},
+  "test_code": "",
+  "tokens_in": 0,
+  "tokens_out": 0,
+  "duration_sec": 2.2449488639831543,
+  "error": "litellm.RateLimitError: RateLimitError: OpenrouterException - {\"error\":{\"message\":\"Provider returned error\",\"code\":429,\"metadata\":{\"raw\":\"meta-llama/llama-3.2-3b-instruct:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations\",\"provider_name\":\"Venice\",\"is_byok\":false}},\"user_id\":\"user_37kQZ4yXt4hnDnJeX7tzyA2hBlP\"}"
+}
