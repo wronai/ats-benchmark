@@ -1,7 +1,7 @@
 # ats-benchmark Makefile
 # Usage:
-#   make setup TARGET=/home/tom/github/wronai/nfo
-#   make setup TARGET=/home/tom/github/wronai/nfo PROBLEM="parser logów nie grupuje po trace_id"
+#   make setup TARGET=./test-broken-code
+#   make setup TARGET=./test-broken-code PROBLEM="parser logów nie grupuje po trace_id"
 #   make benchmark-all
 #   make repair
 #   make results
@@ -52,7 +52,7 @@ setup: ## Configure target project: make setup TARGET=/path/to/project [PROBLEM=
 env-check: ## Verify .env is configured
 	@test -f .env || (echo "ERROR: .env not found. Run: make setup TARGET=/path/to/project" && exit 1)
 	@grep -q "OPENROUTER_API_KEY=sk-or-v" .env || echo "WARNING: OPENROUTER_API_KEY may not be set"
-	@grep -q "TARGET_PROJECT=/" .env || echo "WARNING: TARGET_PROJECT not set. Run: make setup TARGET=/path"
+	@grep -Eq "^TARGET_PROJECT=.+" .env || echo "WARNING: TARGET_PROJECT not set. Run: make setup TARGET=./test-broken-code"
 	@echo ".env OK"
 
 # ---------------------------------------------------------------------------
@@ -69,7 +69,8 @@ build: ## Build all Docker images
 # ---------------------------------------------------------------------------
 
 check-llm: ## Check LLM connection before benchmarks
-	@python3 check_llm.py
+	@echo "=== LLM connection check (docker) ==="
+	docker compose run --rm baseline-bench python -c 'import sys; from benchmarks.common import check_llm_connection; result = check_llm_connection(); sys.exit(0 if result.get("success") else 1)'
 
 benchmark-all: check-llm benchmark-code2logic benchmark-nfo benchmark-baseline benchmark-callgraph benchmark-treesitter benchmark-astgrep benchmark-radon benchmark-bandit ## Run all benchmarks
 	@echo ""

@@ -107,7 +107,7 @@ def _analyze_security(app_path: Path) -> str:
             lines.append(f"  Files scanned: {totals.get('files', 0)}")
             lines.append(f"  Lines scanned: {totals.get('loc', 0)}")
             lines.append(f"  SEVERE (High): {totals.get('SEVERITY.HIGH', 0)}")
-            lines.append(f"  CONFIDENCE.HIGH: {totos.get('CONFIDENCE.HIGH', 0)}")
+            lines.append(f"  CONFIDENCE.HIGH: {totals.get('CONFIDENCE.HIGH', 0)}")
 
     # Add confidence information
     high_confidence = [r for r in results if r.get("issue_confidence") == "HIGH"]

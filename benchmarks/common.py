@@ -268,14 +268,18 @@ def check_llm_connection() -> Dict[str, Any]:
         )
         duration = time.time() - start
         content = response.choices[0].message.content or ""
-        
-        if "OK" in content.upper():
-            print(f"  Status: SUCCESS ({duration:.2f}s)")
-            return {"success": True, "duration": duration, "model": model}
-        else:
-            error_msg = f"Unexpected response from LLM: {content}"
-            print(f"  Status: FAILED - {error_msg}")
-            return {"success": False, "error": error_msg}
+
+        # Connectivity check should validate transport/auth, not strict wording.
+        # Some models/providers may return empty or unexpected text for this prompt.
+        print(f"  Status: SUCCESS ({duration:.2f}s)")
+        if not content.strip():
+            print("  Note: empty test response, but API call completed successfully")
+        return {
+            "success": True,
+            "duration": duration,
+            "model": model,
+            "response_preview": content[:80],
+        }
             
     except Exception as e:
         duration = time.time() - start

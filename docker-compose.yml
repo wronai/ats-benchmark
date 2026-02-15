@@ -28,6 +28,7 @@ services:
     env_file: .env
     volumes:
       - ./benchmarks:/workspace/benchmarks
+      - ./check_llm.py:/workspace/check_llm.py:ro
       - ${TARGET_PROJECT:-.}:/project:ro
     working_dir: /workspace
 
