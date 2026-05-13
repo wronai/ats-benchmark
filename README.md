@@ -1,5 +1,3 @@
-![img.png](img.png)
-
 # ats-benchmark
 
 Benchmark narzędzi kompresji kodu dla kontekstu LLM — porównanie **code2logic**, **nfo** i baseline (surowy kod) z użyciem LiteLLM + OpenRouter.
@@ -31,13 +29,8 @@ ats-benchmark/
     └── baseline/             # Benchmark: surowy kod (bez kompresji)
 ```
 
-## Szybki start
-
-```bash
 # 1. Konfiguracja
 cp .env.example .env
-# Edytuj .env — ustaw OPENROUTER_API_KEY i MODEL_ID
-
 # 2. Docker (zalecane)
 make all                    # Build + benchmark + results
 
@@ -78,3 +71,20 @@ Apache License 2.0 - see [LICENSE](LICENSE) for details.
 ## Author
 
 Created by **Tom Sapletta** - [tom@sapletta.com](mailto:tom@sapletta.com)
+
+<!-- taskill:status:start -->
+
+## Status
+
+_Last updated by [taskill](https://github.com/oqlos/taskill) at 2026-04-25 13:34 UTC_
+
+| Metric | Value |
+|---|---|
+| HEAD | `10a4185` |
+| Coverage | — |
+| Failing tests | — |
+| Commits in last cycle | 23 |
+
+> Added and refactored documentation, benchmarks, build and test scaffolding around a new deep code analysis engine and several supporting modules; also added demo/example code and removed IDE metadata.
+
+<!-- taskill:status:end -->

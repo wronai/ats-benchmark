@@ -1,0 +1,111 @@
+"""Benchmark: nfo - Runtime logging and data flow extraction for LLM context."""
+import sys
+import time
+from pathlib import Path
+
+if __name__ == "__main__":
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+from benchmarks.common import ANALYSIS_SYSTEM_PROMPT, ANALYSIS_USER_PROMPT_TEMPLATE, BenchmarkResult, call_llm, count_raw_code_chars, evaluate_response_quality, get_target_project, save_llm_artifacts, save_result
+
+def _generate_runtime_logs(app_path: Path) -> str:
+    """Run sample-app with nfo decorators and capture structured logs."""
+    try:
+        from nfo import configure
+        log_file = Path(__file__).parent / 'runtime_logs.jsonl'
+        configure(sinks=[f'json:{log_file}'], propagate_stdlib=False, force=True)
+        sys.path.insert(0, str(app_path.parent))
+        spec_path = app_path / 'models.py'
+        if spec_path.exists():
+            for py_file in sorted(app_path.glob('*.py')):
+                if py_file.name == '__init__.py':
+                    continue
+                module_name = f'sample_app_{py_file.stem}'
+                spec = importlib.util.spec_from_file_location(module_name, py_file)
+                if spec and spec.loader:
+                    try:
+                        mod = importlib.util.module_from_spec(spec)
+                        spec.loader.exec_module(mod)
+                    except Exception:
+                        pass
+        if log_file.exists():
+            return log_file.read_text(encoding='utf-8', errors='ignore')
+    except Exception as e:
+        pass
+    return ''
+
+def _analyze_with_nfo(app_path: Path) -> str:
+    """Use nfo to analyze code structure and generate compressed data flow context."""
+    try:
+        lines = []
+        lines.append('# Data Flow Analysis (nfo)')
+        lines.append('## Module Dependencies')
+        _SKIP_DIRS = {'__pycache__', 'venv', '.venv', 'dist', 'build', '.git', '.tox', '.mypy_cache', 'node_modules', '.idea'}
+        imports_map = {}
+        for py_file in sorted(app_path.rglob('*.py')):
+            if py_file.name == '__init__.py':
+                continue
+            if any((part in _SKIP_DIRS or part.startswith('.') for part in py_file.relative_to(app_path).parts)):
+                continue
+            rel = py_file.relative_to(app_path)
+            content = py_file.read_text(encoding='utf-8', errors='ignore')
+            file_imports = []
+            for line in content.splitlines():
+                stripped = line.strip()
+                if stripped.startswith('from .') or stripped.startswith('import '):
+                    file_imports.append(stripped)
+            imports_map[str(rel)] = file_imports
+            lines.append(f'\n### {rel}')
+            in_class = None
+            for line in content.splitlines():
+                stripped = line.strip()
+                if stripped.startswith('class '):
+                    in_class = stripped.split('(')[0].replace('class ', '')
+                    lines.append(f'  class {in_class}')
+                elif stripped.startswith('def '):
+                    func_name = stripped.split('(')[0].replace('def ', '')
+                    ret = ''
+                    if '->' in stripped:
+                        ret = stripped.split('->')[1].strip().rstrip(':')
+                    prefix = f'    {in_class}.' if in_class else '  '
+                    lines.append(f"{prefix}{func_name}() -> {ret or '?'}")
+                    if 'self.' in content[content.index(stripped):content.index(stripped) + 500]:
+                        attrs = set()
+                        block_start = content.index(stripped)
+                        block = content[block_start:block_start + 1000]
+                        for token in block.split():
+                            if token.startswith('self.') and '(' not in token:
+                                attr = token.replace('self.', '').rstrip(',;:)')
+                                if attr and len(attr) < 30:
+                                    attrs.add(attr)
+                        if attrs:
+                            lines.append(f"      data: {', '.join(sorted(attrs)[:5])}")
+        lines.append('\n## Import Graph')
+        for module, imports in imports_map.items():
+            if imports:
+                lines.append(f'  {module}:')
+                for imp in imports[:5]:
+                    lines.append(f'    <- {imp}')
+        return '\n'.join(lines)
+    except Exception as e:
+        return f'[nfo analysis failed: {e}]'
+
+def run_benchmark() -> BenchmarkResult:
+    total_start = time.time()
+    app_path = get_target_project()
+    raw_chars = count_raw_code_chars(app_path)
+    analysis_start = time.time()
+    context = _analyze_with_nfo(app_path)
+    runtime_logs = _generate_runtime_logs(app_path)
+    if runtime_logs:
+        context += f'\n\n## Runtime Logs (nfo)\n{runtime_logs[:2000]}'
+    analysis_duration = time.time() - analysis_start
+    prompt = ANALYSIS_USER_PROMPT_TEMPLATE.format(tool_name='nfo (data flow + runtime logging)', context=context)
+    llm_result = call_llm(prompt, system=ANALYSIS_SYSTEM_PROMPT)
+    save_llm_artifacts(Path(__file__).parent, stage='benchmark', system_prompt=ANALYSIS_SYSTEM_PROMPT, prompt=prompt, context=context, llm_result=llm_result, extra={'tool': 'nfo', 'has_runtime_logs': bool(runtime_logs)})
+    total_duration = time.time() - total_start
+    result = BenchmarkResult(tool='nfo', target_project=str(app_path), tokens_in=llm_result['tokens_in'], tokens_out=llm_result['tokens_out'], duration_analysis_sec=analysis_duration, duration_llm_sec=llm_result['duration_sec'], duration_total_sec=total_duration, context_chars=len(context), raw_code_chars=raw_chars, compression_ratio=1 - len(context) / raw_chars if raw_chars > 0 else 0, llm_response=llm_result['response'], llm_quality_keywords=evaluate_response_quality(llm_result['response']), error=llm_result['error'], metadata={'mode': 'data_flow+runtime', 'has_runtime_logs': bool(runtime_logs)})
+    return result
+if __name__ == '__main__':
+    result = run_benchmark()
+    output_dir = Path(__file__).parent
+    save_result(result, output_dir)

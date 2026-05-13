@@ -1,4 +1,4 @@
-## [1.0.9] - 2026-02-15
+## [Unreleased]
 
 ### Summary
 
@@ -31,8 +31,6 @@ refactor(docs): deep code analysis engine with 7 supporting modules
 - ... and 76 more
 
 
-## [1.0.8] - 2026-02-15
-
 ### Summary
 
 chore(benchmarks): deep code analysis engine with 3 supporting modules
@@ -42,8 +40,6 @@ chore(benchmarks): deep code analysis engine with 3 supporting modules
 - update benchmark_summary.json
 - update benchmarks/code2logic/results.json
 
-
-## [1.0.7] - 2026-02-15
 
 ### Summary
 
@@ -63,8 +59,6 @@ refactor(benchmarks): deep code analysis engine with 7 supporting modules
 - update benchmarks/treesitter/results.json
 
 
-## [1.0.6] - 2026-02-15
-
 ### Summary
 
 feat(docs): deep code analysis engine with 2 supporting modules
@@ -77,8 +71,6 @@ feat(docs): deep code analysis engine with 2 supporting modules
 
 - build: update Makefile
 
-
-## [1.0.5] - 2026-02-15
 
 ### Summary
 
@@ -99,8 +91,6 @@ refactor(docs): deep code analysis engine with 7 supporting modules
 - ... and 2 more
 
 
-## [1.0.4] - 2026-02-15
-
 ### Summary
 
 refactor(docs): deep code analysis engine with 4 supporting modules
@@ -116,8 +106,6 @@ refactor(docs): deep code analysis engine with 4 supporting modules
 - update benchmarks/nfo/results.json
 - docker: update Dockerfile
 
-
-## [1.0.3] - 2026-02-15
 
 ### Summary
 
@@ -137,8 +125,6 @@ refactor(build): deep code analysis engine with 6 supporting modules
 - build: update Makefile
 - ... and 22 more
 
-
-## [1.0.2] - 2026-02-15
 
 ### Summary
 
@@ -162,8 +148,6 @@ feat(build): deep code analysis engine with 7 supporting modules
 - update benchmarks/baseline/requirements.txt
 - ... and 15 more
 
-
-## [1.0.1] - 2026-02-15
 
 ### Summary
 
@@ -189,4 +173,11 @@ feat(tests): deep code analysis engine with 7 supporting modules
 - update .idea/vcs.xml
 - scripts: update project.sh
 
+- refactor(docs): deep code analysis engine with 7 supporting modules
+- chore(benchmarks): deep code analysis engine with 3 supporting modules
+- refactor(benchmarks): deep code analysis engine with 7 supporting modules
+- feat(build): deep code analysis engine with 6 supporting modules
+- feat(tests): deep code analysis engine with 7 supporting modules
+- demo: add example code for benchmarks
+- chore: delete .idea
 

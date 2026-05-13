@@ -1,0 +1,1202 @@
+name: Code Quality Improvement
+project_name: ''
+project_type: prefactoring
+domain: dev-tools
+goal: Improve code quality using prefact
+goals:
+- Fix all prefact-detected issues
+- Improve code maintainability
+- Ensure consistent code style
+quality_gates:
+- metric: Prefact Issues
+  threshold: '0'
+sprints:
+- id: sprint-1
+  name: Code Quality Improvements
+  duration: 2 weeks
+  objectives:
+  - Fix code quality issues
+  task_patterns:
+  - id: ticket-3a19c0de
+    name: Fix unused-imports issues
+    description: Resolve 2 unused-imports issues in benchmarks/bandit/benchmark.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/bandit/benchmark.py
+    rule_id: unused-imports
+    count: 2
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-f759e55e
+    name: Fix magic-numbers issues
+    description: Resolve 1 magic-numbers issues in benchmarks/bandit/benchmark.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/bandit/benchmark.py
+    rule_id: magic-numbers
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-bd377e45
+    name: Fix ai-boilerplate issues
+    description: Resolve 1 ai-boilerplate issues in benchmarks/bandit/benchmark.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/bandit/benchmark.py
+    rule_id: ai-boilerplate
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-c2421057
+    name: Fix unused-imports issues
+    description: Resolve 2 unused-imports issues in benchmarks/baseline/benchmark.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/baseline/benchmark.py
+    rule_id: unused-imports
+    count: 2
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-b402d631
+    name: Fix magic-numbers issues
+    description: Resolve 1 magic-numbers issues in benchmarks/baseline/benchmark.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/baseline/benchmark.py
+    rule_id: magic-numbers
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-cbf84407
+    name: Fix ai-boilerplate issues
+    description: Resolve 1 ai-boilerplate issues in benchmarks/baseline/benchmark.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/baseline/benchmark.py
+    rule_id: ai-boilerplate
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-d05ad83e
+    name: Fix unused-imports issues
+    description: Resolve 2 unused-imports issues in benchmarks/astgrep/benchmark.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/astgrep/benchmark.py
+    rule_id: unused-imports
+    count: 2
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-9993f6eb
+    name: Fix magic-numbers issues
+    description: Resolve 7 magic-numbers issues in benchmarks/astgrep/benchmark.py
+    task_type: prefactor
+    priority: high
+    estimate: 2d
+    files:
+    - benchmarks/astgrep/benchmark.py
+    rule_id: magic-numbers
+    count: 7
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-e98dd777
+    name: Fix ai-boilerplate issues
+    description: Resolve 1 ai-boilerplate issues in benchmarks/astgrep/benchmark.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/astgrep/benchmark.py
+    rule_id: ai-boilerplate
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-bc869012
+    name: Fix smart-return-type issues
+    description: Resolve 1 smart-return-type issues in analyze_results.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - analyze_results.py
+    rule_id: smart-return-type
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-0049b328
+    name: Fix string-concat issues
+    description: Resolve 1 string-concat issues in analyze_results.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - analyze_results.py
+    rule_id: string-concat
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-3a762af0
+    name: Fix unused-imports issues
+    description: Resolve 2 unused-imports issues in analyze_results.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - analyze_results.py
+    rule_id: unused-imports
+    count: 2
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-f3bfd569
+    name: Fix magic-numbers issues
+    description: Resolve 19 magic-numbers issues in analyze_results.py
+    task_type: prefactor
+    priority: high
+    estimate: 3d
+    files:
+    - analyze_results.py
+    rule_id: magic-numbers
+    count: 19
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-124fc120
+    name: Fix ai-boilerplate issues
+    description: Resolve 2 ai-boilerplate issues in analyze_results.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - analyze_results.py
+    rule_id: ai-boilerplate
+    count: 2
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-95182b90
+    name: Fix unused-imports issues
+    description: Resolve 2 unused-imports issues in benchmarks/code2logic/benchmark.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/code2logic/benchmark.py
+    rule_id: unused-imports
+    count: 2
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-c54934ef
+    name: Fix duplicate-imports issues
+    description: Resolve 1 duplicate-imports issues in benchmarks/code2logic/benchmark.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/code2logic/benchmark.py
+    rule_id: duplicate-imports
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-7e251b34
+    name: Fix ai-boilerplate issues
+    description: Resolve 1 ai-boilerplate issues in benchmarks/code2logic/benchmark.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/code2logic/benchmark.py
+    rule_id: ai-boilerplate
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-d0802a02
+    name: Fix string-concat issues
+    description: Resolve 2 string-concat issues in benchmarks/nfo/benchmark.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/nfo/benchmark.py
+    rule_id: string-concat
+    count: 2
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-0c7bc467
+    name: Fix unused-imports issues
+    description: Resolve 10 unused-imports issues in benchmarks/nfo/benchmark.py
+    task_type: prefactor
+    priority: high
+    estimate: 2d
+    files:
+    - benchmarks/nfo/benchmark.py
+    rule_id: unused-imports
+    count: 10
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-de800f3f
+    name: Fix duplicate-imports issues
+    description: Resolve 2 duplicate-imports issues in benchmarks/nfo/benchmark.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/nfo/benchmark.py
+    rule_id: duplicate-imports
+    count: 2
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-518b66d6
+    name: Fix magic-numbers issues
+    description: Resolve 4 magic-numbers issues in benchmarks/nfo/benchmark.py
+    task_type: prefactor
+    priority: medium
+    estimate: 2d
+    files:
+    - benchmarks/nfo/benchmark.py
+    rule_id: magic-numbers
+    count: 4
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-c3b3c611
+    name: Fix ai-boilerplate issues
+    description: Resolve 1 ai-boilerplate issues in benchmarks/nfo/benchmark.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/nfo/benchmark.py
+    rule_id: ai-boilerplate
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-405f9637
+    name: Fix string-concat issues
+    description: Resolve 2 string-concat issues in benchmarks/callgraph/benchmark.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/callgraph/benchmark.py
+    rule_id: string-concat
+    count: 2
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-df134caa
+    name: Fix unused-imports issues
+    description: Resolve 2 unused-imports issues in benchmarks/callgraph/benchmark.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/callgraph/benchmark.py
+    rule_id: unused-imports
+    count: 2
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-75222589
+    name: Fix magic-numbers issues
+    description: Resolve 7 magic-numbers issues in benchmarks/callgraph/benchmark.py
+    task_type: prefactor
+    priority: high
+    estimate: 2d
+    files:
+    - benchmarks/callgraph/benchmark.py
+    rule_id: magic-numbers
+    count: 7
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-50867bf8
+    name: Fix ai-boilerplate issues
+    description: Resolve 1 ai-boilerplate issues in benchmarks/callgraph/benchmark.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/callgraph/benchmark.py
+    rule_id: ai-boilerplate
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-a271655f
+    name: Fix relative-imports issues
+    description: Resolve 4 relative-imports issues in benchmarks/repair/baseline/fixes/app____init__.py
+    task_type: prefactor
+    priority: medium
+    estimate: 2d
+    files:
+    - benchmarks/repair/baseline/fixes/app____init__.py
+    rule_id: relative-imports
+    count: 4
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-61f2a8d9
+    name: Fix unused-imports issues
+    description: Resolve 2 unused-imports issues in benchmarks/radon/benchmark.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/radon/benchmark.py
+    rule_id: unused-imports
+    count: 2
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-a139a706
+    name: Fix magic-numbers issues
+    description: Resolve 10 magic-numbers issues in benchmarks/radon/benchmark.py
+    task_type: prefactor
+    priority: high
+    estimate: 2d
+    files:
+    - benchmarks/radon/benchmark.py
+    rule_id: magic-numbers
+    count: 10
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-2d1cb27f
+    name: Fix ai-boilerplate issues
+    description: Resolve 1 ai-boilerplate issues in benchmarks/radon/benchmark.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/radon/benchmark.py
+    rule_id: ai-boilerplate
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-23d4fd3f
+    name: Fix string-concat issues
+    description: Resolve 1 string-concat issues in benchmarks/repair/baseline/fixes/app__log_flow_parser.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/repair/baseline/fixes/app__log_flow_parser.py
+    rule_id: string-concat
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-f342319c
+    name: Fix unused-imports issues
+    description: Resolve 2 unused-imports issues in benchmarks/repair/baseline/fixes/app__log_flow_parser.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/repair/baseline/fixes/app__log_flow_parser.py
+    rule_id: unused-imports
+    count: 2
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-8387e5f8
+    name: Fix llm-generated-code issues
+    description: Resolve 4 llm-generated-code issues in benchmarks/repair/baseline/fixes/app__log_flow_parser.py
+    task_type: prefactor
+    priority: medium
+    estimate: 2d
+    files:
+    - benchmarks/repair/baseline/fixes/app__log_flow_parser.py
+    rule_id: llm-generated-code
+    count: 4
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-df53496d
+    name: Fix string-concat issues
+    description: Resolve 3 string-concat issues in benchmarks/repair/repair_pipeline.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/repair/repair_pipeline.py
+    rule_id: string-concat
+    count: 3
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-95c0eb08
+    name: Fix unused-imports issues
+    description: Resolve 6 unused-imports issues in benchmarks/repair/repair_pipeline.py
+    task_type: prefactor
+    priority: high
+    estimate: 2d
+    files:
+    - benchmarks/repair/repair_pipeline.py
+    rule_id: unused-imports
+    count: 6
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-5550f942
+    name: Fix magic-numbers issues
+    description: Resolve 11 magic-numbers issues in benchmarks/repair/repair_pipeline.py
+    task_type: prefactor
+    priority: high
+    estimate: 3d
+    files:
+    - benchmarks/repair/repair_pipeline.py
+    rule_id: magic-numbers
+    count: 11
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-04428f58
+    name: Fix ai-boilerplate issues
+    description: Resolve 1 ai-boilerplate issues in benchmarks/repair/repair_pipeline.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/repair/repair_pipeline.py
+    rule_id: ai-boilerplate
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-8814c603
+    name: Fix string-concat issues
+    description: Resolve 1 string-concat issues in check_llm.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - check_llm.py
+    rule_id: string-concat
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-e303af97
+    name: Fix unused-imports issues
+    description: Resolve 4 unused-imports issues in check_llm.py
+    task_type: prefactor
+    priority: medium
+    estimate: 2d
+    files:
+    - check_llm.py
+    rule_id: unused-imports
+    count: 4
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-fbe8a961
+    name: Fix magic-numbers issues
+    description: Resolve 2 magic-numbers issues in check_llm.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - check_llm.py
+    rule_id: magic-numbers
+    count: 2
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-4a88459b
+    name: Fix ai-boilerplate issues
+    description: Resolve 1 ai-boilerplate issues in check_llm.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - check_llm.py
+    rule_id: ai-boilerplate
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-bebd4f1e
+    name: Fix smart-return-type issues
+    description: Resolve 1 smart-return-type issues in benchmarks/treesitter/benchmark.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/treesitter/benchmark.py
+    rule_id: smart-return-type
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-9dbd973b
+    name: Fix string-concat issues
+    description: Resolve 4 string-concat issues in benchmarks/treesitter/benchmark.py
+    task_type: prefactor
+    priority: medium
+    estimate: 2d
+    files:
+    - benchmarks/treesitter/benchmark.py
+    rule_id: string-concat
+    count: 4
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-9431b951
+    name: Fix unused-imports issues
+    description: Resolve 2 unused-imports issues in benchmarks/treesitter/benchmark.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/treesitter/benchmark.py
+    rule_id: unused-imports
+    count: 2
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-4c9da6f2
+    name: Fix magic-numbers issues
+    description: Resolve 3 magic-numbers issues in benchmarks/treesitter/benchmark.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/treesitter/benchmark.py
+    rule_id: magic-numbers
+    count: 3
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-18a38d20
+    name: Fix ai-boilerplate issues
+    description: Resolve 1 ai-boilerplate issues in benchmarks/treesitter/benchmark.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/treesitter/benchmark.py
+    rule_id: ai-boilerplate
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-bdede37d
+    name: Fix relative-imports issues
+    description: Resolve 4 relative-imports issues in sample-app/main.py
+    task_type: prefactor
+    priority: medium
+    estimate: 2d
+    files:
+    - sample-app/main.py
+    rule_id: relative-imports
+    count: 4
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-9c5a26d1
+    name: Fix smart-return-type issues
+    description: Resolve 1 smart-return-type issues in sample-app/main.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - sample-app/main.py
+    rule_id: smart-return-type
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-f11043e4
+    name: Fix magic-numbers issues
+    description: Resolve 15 magic-numbers issues in sample-app/main.py
+    task_type: prefactor
+    priority: high
+    estimate: 3d
+    files:
+    - sample-app/main.py
+    rule_id: magic-numbers
+    count: 15
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-565fb884
+    name: Fix ai-boilerplate issues
+    description: Resolve 1 ai-boilerplate issues in sample-app/main.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - sample-app/main.py
+    rule_id: ai-boilerplate
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-2a9d5849
+    name: Fix relative-imports issues
+    description: Resolve 2 relative-imports issues in sample-app/services.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - sample-app/services.py
+    rule_id: relative-imports
+    count: 2
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-bd1c6ae7
+    name: Fix unused-imports issues
+    description: Resolve 2 unused-imports issues in sample-app/services.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - sample-app/services.py
+    rule_id: unused-imports
+    count: 2
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-2c222889
+    name: Fix magic-numbers issues
+    description: Resolve 4 magic-numbers issues in sample-app/services.py
+    task_type: prefactor
+    priority: medium
+    estimate: 2d
+    files:
+    - sample-app/services.py
+    rule_id: magic-numbers
+    count: 4
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-2b8fab42
+    name: Fix unused-imports issues
+    description: Resolve 6 unused-imports issues in sample-app/models.py
+    task_type: prefactor
+    priority: high
+    estimate: 2d
+    files:
+    - sample-app/models.py
+    rule_id: unused-imports
+    count: 6
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-9bb7f7d8
+    name: Fix string-concat issues
+    description: Resolve 3 string-concat issues in benchmarks/common.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/common.py
+    rule_id: string-concat
+    count: 3
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-a9e1f4ce
+    name: Fix unused-imports issues
+    description: Resolve 10 unused-imports issues in benchmarks/common.py
+    task_type: prefactor
+    priority: high
+    estimate: 2d
+    files:
+    - benchmarks/common.py
+    rule_id: unused-imports
+    count: 10
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-416f6876
+    name: Fix magic-numbers issues
+    description: Resolve 13 magic-numbers issues in benchmarks/common.py
+    task_type: prefactor
+    priority: high
+    estimate: 3d
+    files:
+    - benchmarks/common.py
+    rule_id: magic-numbers
+    count: 13
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-c5b174f3
+    name: Fix relative-imports issues
+    description: Resolve 8 relative-imports issues in test-broken-code/app/__init__.py
+    task_type: prefactor
+    priority: high
+    estimate: 2d
+    files:
+    - test-broken-code/app/__init__.py
+    rule_id: relative-imports
+    count: 8
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-ebc26b53
+    name: Fix duplicate-imports issues
+    description: Resolve 9 duplicate-imports issues in test-broken-code/app/__init__.py
+    task_type: prefactor
+    priority: high
+    estimate: 2d
+    files:
+    - test-broken-code/app/__init__.py
+    rule_id: duplicate-imports
+    count: 9
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-38289be5
+    name: Fix wildcard-imports issues
+    description: Resolve 12 wildcard-imports issues in test-broken-code/app/__init__.py
+    task_type: prefactor
+    priority: high
+    estimate: 3d
+    files:
+    - test-broken-code/app/__init__.py
+    rule_id: wildcard-imports
+    count: 12
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-cb653767
+    name: Fix unused-imports issues
+    description: Resolve 2 unused-imports issues in test-broken-code/app/concurrency.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - test-broken-code/app/concurrency.py
+    rule_id: unused-imports
+    count: 2
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-0db7de12
+    name: Fix relative-imports issues
+    description: Resolve 8 relative-imports issues in test-broken-code/app/config.py
+    task_type: prefactor
+    priority: high
+    estimate: 2d
+    files:
+    - test-broken-code/app/config.py
+    rule_id: relative-imports
+    count: 8
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-76e66ba9
+    name: Fix unused-imports issues
+    description: Resolve 40 unused-imports issues in test-broken-code/app/config.py
+    task_type: prefactor
+    priority: high
+    estimate: 3d
+    files:
+    - test-broken-code/app/config.py
+    rule_id: unused-imports
+    count: 40
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-cbcb8034
+    name: Fix smart-return-type issues
+    description: Resolve 1 smart-return-type issues in test-broken-code/app/core.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - test-broken-code/app/core.py
+    rule_id: smart-return-type
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-2a0f2594
+    name: Fix unused-imports issues
+    description: Resolve 2 unused-imports issues in test-broken-code/app/core.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - test-broken-code/app/core.py
+    rule_id: unused-imports
+    count: 2
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-6619cb1d
+    name: Fix llm-hallucinations issues
+    description: Resolve 1 llm-hallucinations issues in test-broken-code/app/core.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - test-broken-code/app/core.py
+    rule_id: llm-hallucinations
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-852b5924
+    name: Fix relative-imports issues
+    description: Resolve 2 relative-imports issues in test-broken-code/app/rules.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - test-broken-code/app/rules.py
+    rule_id: relative-imports
+    count: 2
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-4b99a44e
+    name: Fix unused-imports issues
+    description: Resolve 2 unused-imports issues in test-broken-code/app/rules.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - test-broken-code/app/rules.py
+    rule_id: unused-imports
+    count: 2
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-4a5b36c0
+    name: Fix magic-numbers issues
+    description: Resolve 1 magic-numbers issues in test-broken-code/app/rules.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - test-broken-code/app/rules.py
+    rule_id: magic-numbers
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-a5e9fb8b
+    name: Fix unused-imports issues
+    description: Resolve 2 unused-imports issues in test-broken-code/app/security.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - test-broken-code/app/security.py
+    rule_id: unused-imports
+    count: 2
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-44d44e96
+    name: Fix relative-imports issues
+    description: Resolve 8 relative-imports issues in test-broken-code/app/utils.py
+    task_type: prefactor
+    priority: high
+    estimate: 2d
+    files:
+    - test-broken-code/app/utils.py
+    rule_id: relative-imports
+    count: 8
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-673efb53
+    name: Fix duplicate-imports issues
+    description: Resolve 9 duplicate-imports issues in test-broken-code/app/utils.py
+    task_type: prefactor
+    priority: high
+    estimate: 2d
+    files:
+    - test-broken-code/app/utils.py
+    rule_id: duplicate-imports
+    count: 9
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-2a93750a
+    name: Fix wildcard-imports issues
+    description: Resolve 12 wildcard-imports issues in test-broken-code/app/utils.py
+    task_type: prefactor
+    priority: high
+    estimate: 3d
+    files:
+    - test-broken-code/app/utils.py
+    rule_id: wildcard-imports
+    count: 12
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-bbec433b
+    name: Fix smart-return-type issues
+    description: Resolve 1 smart-return-type issues in test-broken-code/app/utils_async.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - test-broken-code/app/utils_async.py
+    rule_id: smart-return-type
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-2bf3c2d3
+    name: Fix smart-return-type issues
+    description: Resolve 1 smart-return-type issues in test-broken-code/app/utils_core.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - test-broken-code/app/utils_core.py
+    rule_id: smart-return-type
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-fb80e146
+    name: Fix magic-numbers issues
+    description: Resolve 1 magic-numbers issues in test-broken-code/app/utils_rules.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - test-broken-code/app/utils_rules.py
+    rule_id: magic-numbers
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-250972e6
+    name: Fix llm-hallucinations issues
+    description: Resolve 1 llm-hallucinations issues in test-broken-code/app/utils_service.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - test-broken-code/app/utils_service.py
+    rule_id: llm-hallucinations
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-d79eeb84
+    name: Fix unused-imports issues
+    description: Resolve 2 unused-imports issues in benchmarks/config.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/config.py
+    rule_id: unused-imports
+    count: 2
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-2812a453
+    name: Fix unused-imports issues
+    description: Resolve 2 unused-imports issues in benchmarks/env.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/env.py
+    rule_id: unused-imports
+    count: 2
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-cae682f2
+    name: Fix relative-imports issues
+    description: Resolve 2 relative-imports issues in benchmarks/llm.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/llm.py
+    rule_id: relative-imports
+    count: 2
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-6744eb04
+    name: Fix unused-imports issues
+    description: Resolve 2 unused-imports issues in benchmarks/llm.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/llm.py
+    rule_id: unused-imports
+    count: 2
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-75652ead
+    name: Fix magic-numbers issues
+    description: Resolve 1 magic-numbers issues in benchmarks/llm.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/llm.py
+    rule_id: magic-numbers
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-d9333f58
+    name: Fix string-concat issues
+    description: Resolve 2 string-concat issues in benchmarks/models.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/models.py
+    rule_id: string-concat
+    count: 2
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-c6bb0310
+    name: Fix unused-imports issues
+    description: Resolve 2 unused-imports issues in benchmarks/models.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/models.py
+    rule_id: unused-imports
+    count: 2
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-cc2ae667
+    name: Fix magic-numbers issues
+    description: Resolve 6 magic-numbers issues in benchmarks/models.py
+    task_type: prefactor
+    priority: high
+    estimate: 2d
+    files:
+    - benchmarks/models.py
+    rule_id: magic-numbers
+    count: 6
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-1210cb4b
+    name: Fix unused-imports issues
+    description: Resolve 2 unused-imports issues in benchmarks/source.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - benchmarks/source.py
+    rule_id: unused-imports
+    count: 2
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-15dc14e9
+    name: Fix smart-return-type issues
+    description: Resolve 2 smart-return-type issues in test-broken-code/app/db_core.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - test-broken-code/app/db_core.py
+    rule_id: smart-return-type
+    count: 2
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-b028df84
+    name: Fix magic-numbers issues
+    description: Resolve 1 magic-numbers issues in test-broken-code/app/db_core.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - test-broken-code/app/db_core.py
+    rule_id: magic-numbers
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-f18d489b
+    name: Fix relative-imports issues
+    description: Resolve 2 relative-imports issues in test-broken-code/app/db_rules.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - test-broken-code/app/db_rules.py
+    rule_id: relative-imports
+    count: 2
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-6717726a
+    name: Fix magic-numbers issues
+    description: Resolve 1 magic-numbers issues in test-broken-code/app/db_rules.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - test-broken-code/app/db_rules.py
+    rule_id: magic-numbers
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-d0342542
+    name: Fix llm-hallucinations issues
+    description: Resolve 1 llm-hallucinations issues in test-broken-code/app/db_service.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - test-broken-code/app/db_service.py
+    rule_id: llm-hallucinations
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced

@@ -59,7 +59,8 @@ def filter_repairs_for_benchmark_targets(
         return repairs
 
     filtered = [
-        item for item in repairs
+        item
+        for item in repairs
         if str(item.get("target_project", "")).strip() in benchmark_targets
     ]
     return filtered
@@ -109,7 +110,9 @@ def print_comparison_table(results: List[Dict[str, Any]]) -> None:
     print("-" * len(header_line))
 
     # Sort by compression ratio (descending)
-    sorted_results = sorted(results, key=lambda r: r.get("compression_ratio", 0), reverse=True)
+    sorted_results = sorted(
+        results, key=lambda r: r.get("compression_ratio", 0), reverse=True
+    )
 
     for r in sorted_results:
         tool = r.get("tool", "?")
@@ -150,7 +153,9 @@ def print_comparison_table(results: List[Dict[str, Any]]) -> None:
     # Summary
     print("SUMMARY:")
     if len(sorted_results) >= 2:
-        baseline = next((r for r in sorted_results if r["tool"] == "baseline-raw"), None)
+        baseline = next(
+            (r for r in sorted_results if r["tool"] == "baseline-raw"), None
+        )
         if baseline:
             baseline_tokens = baseline.get("tokens_in", 1) or 1
             for r in sorted_results:
@@ -170,9 +175,15 @@ def print_comparison_table(results: List[Dict[str, Any]]) -> None:
         best_quality = max(valid, key=lambda r: r.get("llm_quality_keywords", 0))
         best_speed = min(valid, key=lambda r: r.get("duration_total_sec", float("inf")))
 
-        print(f"\n  Best compression: {best_compression['tool']} ({best_compression['compression_ratio']:.1%})")
-        print(f"  Best quality:     {best_quality['tool']} ({best_quality['llm_quality_keywords']} keywords)")
-        print(f"  Fastest:          {best_speed['tool']} ({best_speed['duration_total_sec']:.2f}s)")
+        print(
+            f"\n  Best compression: {best_compression['tool']} ({best_compression['compression_ratio']:.1%})"
+        )
+        print(
+            f"  Best quality:     {best_quality['tool']} ({best_quality['llm_quality_keywords']} keywords)"
+        )
+        print(
+            f"  Fastest:          {best_speed['tool']} ({best_speed['duration_total_sec']:.2f}s)"
+        )
 
     print()
     print("=" * 90)
@@ -207,7 +218,15 @@ def print_repair_table(repairs: List[Dict[str, Any]]) -> None:
     print(f"Problem: {problem[:120]}")
     print()
 
-    headers = ["Tool", "Tokens In", "Tokens Out", "Duration (s)", "Files Fixed", "Has Test", "Status"]
+    headers = [
+        "Tool",
+        "Tokens In",
+        "Tokens Out",
+        "Duration (s)",
+        "Files Fixed",
+        "Has Test",
+        "Status",
+    ]
     widths = [14, 11, 11, 12, 12, 9, 20]
 
     header_line = " | ".join(h.ljust(w) for h, w in zip(headers, widths))

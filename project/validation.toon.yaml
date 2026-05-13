@@ -1,0 +1,103 @@
+# vallm batch | 167f | 57✓ 13⚠ 15✗ | 2026-03-31
+
+SUMMARY:
+  scanned: 167  passed: 57 (34.1%)  warnings: 13  errors: 15  unsupported: 95
+
+WARNINGS[13]{path,score}:
+  analyze_results.py,0.97
+    issues[2]{rule,severity,message,line}:
+      complexity.cyclomatic,warning,print_comparison_table has cyclomatic complexity 20 (max: 15),83
+      complexity.lizard_cc,warning,print_comparison_table: CC=20 exceeds limit 15,83
+  test-broken-code/app/analytics.py,0.98
+    issues[1]{rule,severity,message,line}:
+      complexity.maintainability,warning,Low maintainability index: 0.0 (threshold: 20),
+  test-broken-code/app/api.py,0.98
+    issues[1]{rule,severity,message,line}:
+      complexity.maintainability,warning,Low maintainability index: 0.0 (threshold: 20),
+  test-broken-code/app/auth.py,0.98
+    issues[1]{rule,severity,message,line}:
+      complexity.maintainability,warning,Low maintainability index: 0.0 (threshold: 20),
+  test-broken-code/app/config.py,0.98
+    issues[1]{rule,severity,message,line}:
+      complexity.maintainability,warning,Low maintainability index: 0.0 (threshold: 20),
+  test-broken-code/app/db.py,0.98
+    issues[1]{rule,severity,message,line}:
+      complexity.maintainability,warning,Low maintainability index: 0.0 (threshold: 20),
+  test-broken-code/app/etl.py,0.98
+    issues[1]{rule,severity,message,line}:
+      complexity.maintainability,warning,Low maintainability index: 0.0 (threshold: 20),
+  test-broken-code/app/inventory.py,0.98
+    issues[1]{rule,severity,message,line}:
+      complexity.maintainability,warning,Low maintainability index: 0.0 (threshold: 20),
+  test-broken-code/app/logging_pipeline.py,0.98
+    issues[1]{rule,severity,message,line}:
+      complexity.maintainability,warning,Low maintainability index: 0.0 (threshold: 20),
+  test-broken-code/app/orders.py,0.98
+    issues[1]{rule,severity,message,line}:
+      complexity.maintainability,warning,Low maintainability index: 0.0 (threshold: 20),
+  test-broken-code/app/payments.py,0.98
+    issues[1]{rule,severity,message,line}:
+      complexity.maintainability,warning,Low maintainability index: 0.0 (threshold: 20),
+  test-broken-code/app/recommendations.py,0.98
+    issues[1]{rule,severity,message,line}:
+      complexity.maintainability,warning,Low maintainability index: 0.0 (threshold: 20),
+  test-broken-code/app/utils.py,0.98
+    issues[1]{rule,severity,message,line}:
+      complexity.maintainability,warning,Low maintainability index: 0.0 (threshold: 20),
+
+ERRORS[15]{path,score}:
+  benchmarks/repair/baseline/fixes/app____init__.py,0.57
+    issues[2]{rule,severity,message,line}:
+      python.import.resolvable,error,Module 'orders' not found,1
+      python.import.resolvable,error,Module 'log_flow_parser' not found,2
+  sample-app/main.py,0.57
+    issues[2]{rule,severity,message,line}:
+      python.import.resolvable,error,Module 'models' not found,3
+      python.import.resolvable,error,Module 'services' not found,4
+  test-broken-code/app/__init__.py,0.57
+    issues[1]{rule,severity,message,line}:
+      python.import.resolvable,error,Module 'orders' not found,1
+  test-broken-code/tests/test_regressions.py,0.79
+    issues[1]{rule,severity,message,line}:
+      python.import.resolvable,error,Module 'app.orders' not found,3
+  check_llm.py,0.89
+    issues[1]{rule,severity,message,line}:
+      python.import.resolvable,error,Module 'benchmarks.common' not found,10
+  sample-app/services.py,0.89
+    issues[1]{rule,severity,message,line}:
+      python.import.resolvable,error,Module 'models' not found,8
+  benchmarks/baseline/benchmark.py,0.91
+    issues[1]{rule,severity,message,line}:
+      python.import.resolvable,error,Module 'benchmarks.common' not found,11
+  benchmarks/code2logic/benchmark.py,0.94
+    issues[1]{rule,severity,message,line}:
+      python.import.resolvable,error,Module 'benchmarks.common' not found,11
+  benchmarks/treesitter/benchmark.py,0.94
+    issues[1]{rule,severity,message,line}:
+      python.import.resolvable,error,Module 'benchmarks.common' not found,11
+  benchmarks/astgrep/benchmark.py,0.95
+    issues[1]{rule,severity,message,line}:
+      python.import.resolvable,error,Module 'benchmarks.common' not found,13
+  benchmarks/bandit/benchmark.py,0.95
+    issues[1]{rule,severity,message,line}:
+      python.import.resolvable,error,Module 'benchmarks.common' not found,13
+  benchmarks/callgraph/benchmark.py,0.95
+    issues[1]{rule,severity,message,line}:
+      python.import.resolvable,error,Module 'benchmarks.common' not found,13
+  benchmarks/radon/benchmark.py,0.95
+    issues[1]{rule,severity,message,line}:
+      python.import.resolvable,error,Module 'benchmarks.common' not found,13
+  benchmarks/repair/repair_pipeline.py,0.95
+    issues[1]{rule,severity,message,line}:
+      python.import.resolvable,error,Module 'benchmarks.common' not found,13
+  benchmarks/nfo/benchmark.py,0.97
+    issues[1]{rule,severity,message,line}:
+      python.import.resolvable,error,Module 'benchmarks.common' not found,13
+
+UNSUPPORTED[6]{bucket,count}:
+  *.md,16
+  Dockerfile*,9
+  *.txt,56
+  *.yml,1
+  *.example,1
+  other,12

@@ -221,11 +221,6 @@ analyze_results.py:
 	cat benchmarks/*/results.json | jq -s 'map(.[]) | group_by(.tool) | map({tool: .[0].tool, avg_duration: (map(.duration_sec) | add / length), avg_tokens: (map(.tokens_in) | add / length)})'
 ```
 
-## Uruchomienie
-
-```bash
-# 1. Skonfiguruj .env z kluczem OpenRouter
-# 2. Stwórz strukturę + sample-app
 # 3. docker-compose up --build  # buduje bazę
 
 make all        # Uruchamia wszystkie benchmarki
@@ -269,10 +264,6 @@ code-benchmark-v2/
 | **Jakość LLM** | BLEU/ROUGE score | Analiza błędów | Data flow issues | Dependency cycles | Generic |
 | **Runtime** | Memory [MB] | Niskie | Średnie (logi) | Niskie | Wysokie |
 
-## Plan rozwoju nfo: Data Flow z logów
-
-### Faza 1: Core parser logów (2-3 dni)
-```python
 # nfo/parser.py - Nowy moduł
 class LogFlowParser:
     def __init__(self):
@@ -297,8 +288,6 @@ class LogFlowParser:
 **Wejście**: Logi z trace_id (structured logs JSON lub multiline)
 **Wyjście**: Graf `serviceA.request -> DB.query -> serviceB.process`
 
-### Faza 2: Integracja z LiteLLM (1 dzień)
-```python
 # nfo/benchmark.py
 def nfo_dataflow_benchmark():
     flow_graph = LogFlowParser().parse_logs(["sample-runtime/app.log"])
@@ -344,11 +333,14 @@ results:
 	python analyze.py  # Tabela + wykres tokenów vs jakość
 ```
 
-## sample-runtime/ - Przykładowe logi
-```bash
 # Uruchom app z tracingiem
 SAMPLE_APP=1 TRACING=otlp python sample-app/main.py
 # Generuje app.log z 10k linii, trace_id, spans
 ```
 
 **Oczekiwane wyniki**:
+
+## Discovered
+
+- Integrate the new deep code analysis engine and its supporting modules into the benchmarks and documentation
+- Add or verify demo/example benchmark runs introduced by the recent demo commits

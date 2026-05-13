@@ -94,13 +94,15 @@ def _analyze_security(app_path: Path) -> str:
                     lines.append(f"  ... and {len(issues) - 10} more")
 
         # Report by category
-        lines.append(f"\n## Issue Categories")
-        for category, issues in sorted(by_category.items(), key=lambda x: len(x[1]), reverse=True):
+        lines.append("\n## Issue Categories")
+        for category, issues in sorted(
+            by_category.items(), key=lambda x: len(x[1]), reverse=True
+        ):
             lines.append(f"  - {category}: {len(issues)} occurrences")
 
     # Metrics summary
     if metrics:
-        lines.append(f"\n## Security Metrics")
+        lines.append("\n## Security Metrics")
 
         # Find _totals or aggregate
         totals = metrics.get("_totals", {})
@@ -133,19 +135,43 @@ def _fallback_security_analysis(app_path: Path) -> str:
         ("eval", r"\beval\s*\(", "eval() usage - arbitrary code execution"),
         ("exec", r"\bexec\s*\(", "exec() usage - arbitrary code execution"),
         ("compile", r"\bcompile\s*\(", "compile() with dynamic input"),
-        ("pickle_loads", r"pickle\.loads?\s*\(", "pickle deserialization - remote code execution"),
-        ("yaml_load", r"yaml\.load\s*\([^)]*\)(?!.*Loader=yaml\.SafeLoader)", "yaml.load without SafeLoader"),
+        (
+            "pickle_loads",
+            r"pickle\.loads?\s*\(",
+            "pickle deserialization - remote code execution",
+        ),
+        (
+            "yaml_load",
+            r"yaml\.load\s*\([^)]*\)(?!.*Loader=yaml\.SafeLoader)",
+            "yaml.load without SafeLoader",
+        ),
         ("shell_true", r"shell\s*=\s*True", "subprocess with shell=True"),
-        ("sql_string_concat", r"(execute|cursor\.execute).*[\"'].*\+|f[\"'].*SELECT", "SQL injection risk"),
-        ("hardcoded_password", r"(password|passwd|pwd)\s*=\s*[\"'][^\"']+[\"']", "Hardcoded password"),
+        (
+            "sql_string_concat",
+            r"(execute|cursor\.execute).*[\"'].*\+|f[\"'].*SELECT",
+            "SQL injection risk",
+        ),
+        (
+            "hardcoded_password",
+            r"(password|passwd|pwd)\s*=\s*[\"'][^\"']+[\"']",
+            "Hardcoded password",
+        ),
         ("debug_true", r"debug\s*=\s*True", "Debug mode enabled"),
-        ("assert_in_production", r"^assert\s+", "assert statements (removed in optimized code)"),
+        (
+            "assert_in_production",
+            r"^assert\s+",
+            "assert statements (removed in optimized code)",
+        ),
         ("tempfile_mktemp", r"tempfile\.mktemp", "Insecure temporary file creation"),
         ("telnetlib", r"import\s+telnetlib", "Telnetlib usage - cleartext protocol"),
         ("ftplib", r"import\s+ftplib", "FTPlib usage - cleartext protocol"),
         ("hashlib_md5", r"hashlib\.md5", "MD5 hash - cryptographically broken"),
         ("hashlib_sha1", r"hashlib\.sha1\s*\(", "SHA1 hash - cryptographically weak"),
-        ("random_crypto", r"(random\.choice|random\.randint).*password|secret|token", "random for crypto"),
+        (
+            "random_crypto",
+            r"(random\.choice|random\.randint).*password|secret|token",
+            "random for crypto",
+        ),
     ]
 
     import re
@@ -163,33 +189,50 @@ def _fallback_security_analysis(app_path: Path) -> str:
             for pattern_name, pattern, description in dangerous_patterns:
                 for i, line in enumerate(lines_content, 1):
                     if re.search(pattern, line):
-                        findings.append({
-                            "file": str(py_file.relative_to(app_path)),
-                            "line": i,
-                            "pattern": pattern_name,
-                            "description": description,
-                            "code": line.strip()[:60],
-                        })
+                        findings.append(
+                            {
+                                "file": str(py_file.relative_to(app_path)),
+                                "line": i,
+                                "pattern": pattern_name,
+                                "description": description,
+                                "code": line.strip()[:60],
+                            }
+                        )
         except Exception:
             continue
 
     if findings:
         # Group by severity/pattern
-        high_severity = [f for f in findings if f["pattern"] in ("eval", "exec", "pickle_loads", "shell_true", "sql_string_concat")]
-        medium_severity = [f for f in findings if f["pattern"] in ("yaml_load", "hardcoded_password", "debug_true")]
-        low_severity = [f for f in findings if f not in high_severity and f not in medium_severity]
+        high_severity = [
+            f
+            for f in findings
+            if f["pattern"]
+            in ("eval", "exec", "pickle_loads", "shell_true", "sql_string_concat")
+        ]
+        medium_severity = [
+            f
+            for f in findings
+            if f["pattern"] in ("yaml_load", "hardcoded_password", "debug_true")
+        ]
+        low_severity = [
+            f for f in findings if f not in high_severity and f not in medium_severity
+        ]
 
         if high_severity:
             lines.append(f"\n## HIGH Severity Findings ({len(high_severity)})")
             for f in high_severity[:10]:
-                lines.append(f"  - {f['file']}:{f['line']} [{f['pattern']}] {f['description']}")
+                lines.append(
+                    f"  - {f['file']}:{f['line']} [{f['pattern']}] {f['description']}"
+                )
 
         if medium_severity:
             lines.append(f"\n## MEDIUM Severity Findings ({len(medium_severity)})")
             for f in medium_severity[:8]:
-                lines.append(f"  - {f['file']}:{f['line']} [{f['pattern']}] {f['description']}")
+                lines.append(
+                    f"  - {f['file']}:{f['line']} [{f['pattern']}] {f['description']}"
+                )
 
-        lines.append(f"\n## Summary")
+        lines.append("\n## Summary")
         lines.append(f"  Total security patterns found: {len(findings)}")
         lines.append(f"  High severity: {len(high_severity)}")
         lines.append(f"  Medium severity: {len(medium_severity)}")

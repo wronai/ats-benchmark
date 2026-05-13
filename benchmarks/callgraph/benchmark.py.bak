@@ -1,0 +1,128 @@
+from typing import Any
+
+
+def _extract_node_name(node: Any) -> str | None:
+    if isinstance(node, str):
+        return node
+    if isinstance(node, dict):
+        name = node.get("name") or node.get("id") or node.get("function") or node.get("qualified_name")
+        if name:
+            return str(name)
+    return None
+
+
+def _extract_edge(edge: Any) -> dict[str, str] | None:
+    if isinstance(edge, dict):
+        src = edge.get("from") or edge.get("caller") or edge.get("src")
+        dst = edge.get("to") or edge.get("callee") or edge.get("dst")
+        if src and dst:
+            return {"from": str(src), "to": str(dst)}
+    elif isinstance(edge, (list, tuple)) and len(edge) >= 2:
+        return {"from": str(edge[0]), "to": str(edge[1])}
+    return None
+
+
+def _extract_entry_point_name(entry_point: Any) -> str:
+    if isinstance(entry_point, str):
+        return entry_point
+    if isinstance(entry_point, dict):
+        name = entry_point.get("name") or entry_point.get("id") or entry_point.get("function")
+        if name:
+            return str(name)
+    return str(entry_point)
+
+
+def _collect_priority_nodes(graph: dict, edges: list[dict[str, str]], max_nodes: int) -> list[str]:
+    entry_points = set()
+    for ep in graph.get("entry_points", []):
+        entry_points.add(_extract_entry_point_name(ep))
+
+    priority_nodes = set(entry_points)
+
+    for edge in edges:
+        if edge.get("from") in entry_points or edge.get("to") in entry_points:
+            priority_nodes.add(edge.get("from"))
+            priority_nodes.add(edge.get("to"))
+
+    if not priority_nodes:
+        degree: dict[str, int] = {}
+        for edge in edges:
+            src = edge.get("from")
+            dst = edge.get("to")
+            if src:
+                degree[src] = degree.get(src, 0) + 1
+            if dst:
+                degree[dst] = degree.get(dst, 0) + 1
+
+        if degree:
+            ranked = sorted(degree.items(), key=lambda item: item[1], reverse=True)
+            priority_nodes.update(node for node, _ in ranked[:max_nodes])
+        else:
+            return []
+
+    return sorted(priority_nodes)[:max_nodes]
+
+
+def _group_nodes_by_module(nodes: list[str]) -> dict[str, list[str]]:
+    by_module: dict[str, list[str]] = {}
+    for node in nodes:
+        if "." in node:
+            mod, name = node.rsplit(".", 1)
+            by_module.setdefault(mod, []).append(name)
+        else:
+            by_module.setdefault("__root__", []).append(node)
+    return by_module
+
+
+def _render_callgraph_lines(nodes: list[str], edges: list[dict[str, str]]) -> list[str]:
+    lines = ["# Call Graph Analysis"]
+    lines.append(f"## Nodes ({len(nodes)} functions/classes)")
+
+    by_module = _group_nodes_by_module(nodes)
+    for mod, names in sorted(by_module.items()):
+        lines.append(f"\n### {mod}")
+        for name in sorted(names)[:20]:
+            lines.append(f"  - {name}")
+        if len(names) > 20:
+            lines.append(f"  ... and {len(names) - 20} more")
+
+    lines.append(f"\n## Call Edges ({len(edges)} relationships)")
+    for edge in edges[:100]:
+        lines.append(f"  {edge.get('from')} -> {edge.get('to')}")
+    if len(edges) > 100:
+        lines.append(f"  ... and {len(edges) - 100} more edges")
+
+    return lines
+
+
+def _compress_callgraph(graph: dict, max_nodes: int = 200) -> str:
+    """Compress call graph into LLM-friendly format."""
+    raw_nodes = graph.get("nodes", [])
+    raw_edges = graph.get("edges", [])
+
+    nodes = []
+    for node in raw_nodes:
+        name = _extract_node_name(node)
+        if name:
+            nodes.append(name)
+
+    edges = []
+    for edge in raw_edges:
+        parsed_edge = _extract_edge(edge)
+        if parsed_edge:
+            edges.append(parsed_edge)
+
+    if not nodes:
+        return "# Call Graph Analysis\n## Nodes (0 functions/classes)\n\n## Call Edges (0 relationships)"
+
+    nodes = sorted(set(nodes))
+
+    # If too large, prioritize entry points and their neighbors
+    if len(nodes) > max_nodes:
+        nodes = _collect_priority_nodes(graph, edges, max_nodes)
+        node_set = set(nodes)
+        edges = [e for e in edges if e.get("from") in node_set and e.get("to") in node_set]
+
+    # Build compressed representation
+    lines = _render_callgraph_lines(nodes, edges)
+    return "\n".join(lines)

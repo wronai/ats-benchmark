@@ -28,6 +28,7 @@ def _get_parser():
 
         try:
             import tree_sitter_python as tspython
+
             py_language = Language(tspython.language())
         except Exception:
             return None
@@ -42,7 +43,9 @@ def _get_parser():
         return None
 
 
-def _serialize_node(node, code_bytes: bytes, indent: int = 0, max_depth: int = 5) -> str:
+def _serialize_node(
+    node, code_bytes: bytes, indent: int = 0, max_depth: int = 5
+) -> str:
     """Serialize AST node to string representation."""
     if node is None or indent > max_depth:
         return ""
@@ -52,7 +55,9 @@ def _serialize_node(node, code_bytes: bytes, indent: int = 0, max_depth: int = 5
 
     # Add text for leaf nodes
     if node.child_count == 0 and node.end_byte - node.start_byte < 50:
-        text = code_bytes[node.start_byte:node.end_byte].decode("utf-8", errors="ignore")
+        text = code_bytes[node.start_byte : node.end_byte].decode(
+            "utf-8", errors="ignore"
+        )
         text = text.replace("\\", "\\\\").replace('"', '\\"')
         result[0] += f' "{text}"'
 
@@ -89,15 +94,25 @@ def _extract_ast_summary(parser, code: bytes) -> dict:
         if node.type == "function_definition":
             name_node = next((c for c in node.children if c.type == "identifier"), None)
             if name_node:
-                stats["functions"].append(code[name_node.start_byte:name_node.end_byte].decode("utf-8", errors="ignore"))
+                stats["functions"].append(
+                    code[name_node.start_byte : name_node.end_byte].decode(
+                        "utf-8", errors="ignore"
+                    )
+                )
 
         elif node.type == "class_definition":
             name_node = next((c for c in node.children if c.type == "identifier"), None)
             if name_node:
-                stats["classes"].append(code[name_node.start_byte:name_node.end_byte].decode("utf-8", errors="ignore"))
+                stats["classes"].append(
+                    code[name_node.start_byte : name_node.end_byte].decode(
+                        "utf-8", errors="ignore"
+                    )
+                )
 
         elif node.type in ("import_statement", "import_from_statement"):
-            stats["imports"].append(code[node.start_byte:node.end_byte].decode("utf-8", errors="ignore"))
+            stats["imports"].append(
+                code[node.start_byte : node.end_byte].decode("utf-8", errors="ignore")
+            )
 
         for child in node.children:
             traverse(child, depth + 1)
@@ -118,7 +133,16 @@ def _build_treesitter_context(app_path: Path, max_files: int = 10) -> str:
     all_classes = []
     all_imports = []
 
-    _SKIP_DIRS = {"__pycache__", "venv", ".venv", "dist", "build", ".git", ".tox", ".mypy_cache"}
+    _SKIP_DIRS = {
+        "__pycache__",
+        "venv",
+        ".venv",
+        "dist",
+        "build",
+        ".git",
+        ".tox",
+        ".mypy_cache",
+    }
 
     py_files = list(app_path.rglob("*.py"))
     processed = 0
@@ -140,7 +164,9 @@ def _build_treesitter_context(app_path: Path, max_files: int = 10) -> str:
             all_imports.extend(stats["imports"])
 
             lines.append(f"\n## {rel}")
-            lines.append(f"  AST nodes: {stats['total_nodes']}, depth: {stats['depth']}")
+            lines.append(
+                f"  AST nodes: {stats['total_nodes']}, depth: {stats['depth']}"
+            )
 
             # Sample AST structure (first function only)
             tree = parser.parse(code)
@@ -158,7 +184,7 @@ def _build_treesitter_context(app_path: Path, max_files: int = 10) -> str:
             lines.append(f"  [Error: {e}]")
 
     # Summary
-    lines.insert(1, f"\n## Summary")
+    lines.insert(1, "\n## Summary")
     lines.insert(2, f"  Files analyzed: {processed}")
     lines.insert(3, f"  Total AST nodes: {total_nodes}")
     lines.insert(4, f"  Functions found: {len(all_functions)}")

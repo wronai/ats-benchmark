@@ -1,0 +1,89 @@
+from __future__ import annotations
+
+import json
+import subprocess
+from pathlib import Path
+
+
+def _build_ast_grep_commands(pattern: str, app_path: Path, lang: str) -> list[list[str]]:
+    """Build ast-grep command variants for current and legacy CLIs."""
+    return [
+        ["ast-grep", "run", "--pattern", pattern, "--json=stream", "-l", lang, str(app_path)],
+        ["ast-grep", "scan", "--pattern", pattern, "--json", "-l", lang, str(app_path)],
+    ]
+
+
+def _run_ast_grep_command(cmd: list[str]) -> subprocess.CompletedProcess[str] | None:
+    """Run a single ast-grep command and return the completed process on success."""
+    try:
+        return subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        return None
+
+
+def _parse_ast_grep_stream_output(output: str) -> list | None:
+    """Parse ast-grep JSON lines output when all lines are valid JSON objects."""
+    matches = []
+    all_json_lines = True
+    for line in output.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            matches.append(json.loads(line))
+        except json.JSONDecodeError:
+            all_json_lines = False
+            matches = []
+            break
+    if all_json_lines and matches:
+        return matches
+    return None
+
+
+def _parse_ast_grep_fallback_output(output: str) -> list | None:
+    """Parse ast-grep JSON array/object output fallback."""
+    try:
+        parsed = json.loads(output)
+    except json.JSONDecodeError:
+        return None
+
+    if isinstance(parsed, list):
+        return parsed
+    if isinstance(parsed, dict):
+        if isinstance(parsed.get("results"), list):
+            return parsed["results"]
+        if "file" in parsed or "range" in parsed:
+            return [parsed]
+    return None
+
+
+def _run_ast_grep(pattern: str, app_path: Path, lang: str = "python") -> list:
+    """Run ast-grep with given pattern and return matches."""
+    commands = _build_ast_grep_commands(pattern, app_path, lang)
+
+    for cmd in commands:
+        result = _run_ast_grep_command(cmd)
+        if result is None:
+            continue
+
+        if result.returncode not in (0, 1):
+            continue
+
+        output = result.stdout.strip()
+        if not output:
+            return []
+
+        matches = _parse_ast_grep_stream_output(output)
+        if matches is not None:
+            return matches
+
+        matches = _parse_ast_grep_fallback_output(output)
+        if matches is not None:
+            return matches
+
+    return []

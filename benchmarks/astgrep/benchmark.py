@@ -27,7 +27,16 @@ def _run_ast_grep(pattern: str, app_path: Path, lang: str = "python") -> list:
     """Run ast-grep with given pattern and return matches."""
     commands = [
         # Current ast-grep CLI
-        ["ast-grep", "run", "--pattern", pattern, "--json=stream", "-l", lang, str(app_path)],
+        [
+            "ast-grep",
+            "run",
+            "--pattern",
+            pattern,
+            "--json=stream",
+            "-l",
+            lang,
+            str(app_path),
+        ],
         # Backward compatibility with older CLI
         ["ast-grep", "scan", "--pattern", pattern, "--json", "-l", lang, str(app_path)],
     ]
@@ -132,7 +141,11 @@ def _analyze_with_astgrep(app_path: Path) -> str:
         ("function_definitions", "def $NAME($$$PARAMS): $$$BODY", "Functions"),
         ("class_definitions", "class $NAME($$$BASES): $$$BODY", "Classes"),
         ("async_functions", "async def $NAME($$$PARAMS): $$$BODY", "Async Functions"),
-        ("exception_handlers", "try: $$$BODY except $$$EXCEPT: $$$HANDLER", "Exception Handling"),
+        (
+            "exception_handlers",
+            "try: $$$BODY except $$$EXCEPT: $$$HANDLER",
+            "Exception Handling",
+        ),
         ("list_comprehensions", "[$ITEM for $VAR in $ITER]", "List Comprehensions"),
         ("dict_patterns", "{$KEY: $VALUE for $VAR in $ITER}", "Dict Comprehensions"),
         ("decorators", "@$DECORATOR\ndef $NAME($$$PARAMS):", "Decorators"),
@@ -155,7 +168,9 @@ def _analyze_with_astgrep(app_path: Path) -> str:
                     # Extract matched variables
                     variables = _extract_match_variables(match)
                     if variables:
-                        var_str = ", ".join([f"{k}={v}" for k, v in list(variables.items())[:3]])
+                        var_str = ", ".join(
+                            [f"{k}={v}" for k, v in list(variables.items())[:3]]
+                        )
                         lines.append(f"  - {file_path}:{line_num} ({var_str})")
                     else:
                         lines.append(f"  - {file_path}:{line_num}")

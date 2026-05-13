@@ -48,7 +48,9 @@ class ProductCatalog:
         if product is None:
             return False
         product.stock += quantity
-        logger.info(f"Restocked product {product_id}: +{quantity} (now {product.stock})")
+        logger.info(
+            f"Restocked product {product_id}: +{quantity} (now {product.stock})"
+        )
         return True
 
 
@@ -71,7 +73,9 @@ class ShoppingCart:
         else:
             self._items[product.id] = CartItem(product=product, quantity=quantity)
 
-        logger.info(f"Added {quantity}x {product.name} to cart for {self.customer.name}")
+        logger.info(
+            f"Added {quantity}x {product.name} to cart for {self.customer.name}"
+        )
         return True, "OK"
 
     def remove_item(self, product_id: int) -> bool:
@@ -139,7 +143,9 @@ class PaymentProcessor:
         if processor is None:
             return False, f"Unsupported payment method: {method.value}"
 
-        logger.info(f"Processing {method.value} payment for order {order.id}: {order.total:.2f}")
+        logger.info(
+            f"Processing {method.value} payment for order {order.id}: {order.total:.2f}"
+        )
 
         success, message = processor(order.total, payment_details)
         if success:
@@ -150,9 +156,7 @@ class PaymentProcessor:
 
         return success, message
 
-    def _process_credit_card(
-        self, amount: float, details: Dict
-    ) -> Tuple[bool, str]:
+    def _process_credit_card(self, amount: float, details: Dict) -> Tuple[bool, str]:
         card_number = details.get("card_number", "")
         if len(card_number) < 13:
             return False, "Invalid card number"
@@ -167,9 +171,7 @@ class PaymentProcessor:
             return False, "Invalid PayPal email"
         return True, f"PayPal payment of {amount:.2f} from {email}"
 
-    def _process_bank_transfer(
-        self, amount: float, details: Dict
-    ) -> Tuple[bool, str]:
+    def _process_bank_transfer(self, amount: float, details: Dict) -> Tuple[bool, str]:
         iban = details.get("iban", "")
         if len(iban) < 15:
             return False, "Invalid IBAN"
@@ -255,9 +257,7 @@ class OrderService:
         return False, "Cannot cancel order in current status"
 
     def get_customer_orders(self, customer_id: int) -> List[Order]:
-        return [
-            o for o in self._orders.values() if o.customer.id == customer_id
-        ]
+        return [o for o in self._orders.values() if o.customer.id == customer_id]
 
     def get_orders_by_status(self, status: OrderStatus) -> List[Order]:
         return [o for o in self._orders.values() if o.status == status]
@@ -272,8 +272,10 @@ class AnalyticsService:
     def revenue_summary(self) -> Dict:
         orders = self._order_service._orders.values()
         confirmed = [
-            o for o in orders
-            if o.status in (OrderStatus.CONFIRMED, OrderStatus.SHIPPED, OrderStatus.DELIVERED)
+            o
+            for o in orders
+            if o.status
+            in (OrderStatus.CONFIRMED, OrderStatus.SHIPPED, OrderStatus.DELIVERED)
         ]
         return {
             "total_orders": len(confirmed),
@@ -306,8 +308,4 @@ class AnalyticsService:
 
     def customer_lifetime_value(self, customer_id: int) -> float:
         orders = self._order_service.get_customer_orders(customer_id)
-        return sum(
-            o.total
-            for o in orders
-            if o.status != OrderStatus.CANCELLED
-        )
+        return sum(o.total for o in orders if o.status != OrderStatus.CANCELLED)

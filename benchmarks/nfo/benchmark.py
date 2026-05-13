@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import json
-import subprocess
 import sys
 import time
 from pathlib import Path
@@ -26,9 +24,7 @@ from benchmarks.common import (
 def _generate_runtime_logs(app_path: Path) -> str:
     """Run sample-app with nfo decorators and capture structured logs."""
     try:
-        import nfo
-        from nfo import Logger, JSONSink, configure
-        from nfo.models import LogEntry
+        from nfo import configure
 
         # Configure nfo with JSON sink for structured output
         log_file = Path(__file__).parent / "runtime_logs.jsonl"
@@ -42,11 +38,11 @@ def _generate_runtime_logs(app_path: Path) -> str:
         # We simulate runtime by importing and calling functions
         sys.path.insert(0, str(app_path.parent))
 
-        from importlib import import_module
         # Dynamically import sample-app modules
         spec_path = app_path / "models.py"
         if spec_path.exists():
             import importlib.util
+
             for py_file in sorted(app_path.glob("*.py")):
                 if py_file.name == "__init__.py":
                     continue
@@ -63,7 +59,7 @@ def _generate_runtime_logs(app_path: Path) -> str:
         if log_file.exists():
             return log_file.read_text(encoding="utf-8", errors="ignore")
 
-    except Exception as e:
+    except Exception:
         pass
 
     return ""
@@ -72,21 +68,32 @@ def _generate_runtime_logs(app_path: Path) -> str:
 def _analyze_with_nfo(app_path: Path) -> str:
     """Use nfo to analyze code structure and generate compressed data flow context."""
     try:
-        import nfo
-        from nfo.models import LogEntry
-
         # Build a manual data flow representation from the source code
         # nfo's strength is runtime logging - we simulate a structured analysis
         lines = []
         lines.append("# Data Flow Analysis (nfo)")
         lines.append("## Module Dependencies")
 
-        _SKIP_DIRS = {"__pycache__", "venv", ".venv", "dist", "build", ".git", ".tox", ".mypy_cache", "node_modules", ".idea"}
+        _SKIP_DIRS = {
+            "__pycache__",
+            "venv",
+            ".venv",
+            "dist",
+            "build",
+            ".git",
+            ".tox",
+            ".mypy_cache",
+            "node_modules",
+            ".idea",
+        }
         imports_map = {}
         for py_file in sorted(app_path.rglob("*.py")):
             if py_file.name == "__init__.py":
                 continue
-            if any(part in _SKIP_DIRS or part.startswith(".") for part in py_file.relative_to(app_path).parts):
+            if any(
+                part in _SKIP_DIRS or part.startswith(".")
+                for part in py_file.relative_to(app_path).parts
+            ):
                 continue
             rel = py_file.relative_to(app_path)
             content = py_file.read_text(encoding="utf-8", errors="ignore")
@@ -118,10 +125,15 @@ def _analyze_with_nfo(app_path: Path) -> str:
 
                     # Data flow: look for attribute access patterns
                     # This simulates what nfo runtime tracing would capture
-                    if "self." in content[content.index(stripped):content.index(stripped)+500]:
+                    if (
+                        "self."
+                        in content[
+                            content.index(stripped) : content.index(stripped) + 500
+                        ]
+                    ):
                         attrs = set()
                         block_start = content.index(stripped)
-                        block = content[block_start:block_start+1000]
+                        block = content[block_start : block_start + 1000]
                         for token in block.split():
                             if token.startswith("self.") and "(" not in token:
                                 attr = token.replace("self.", "").rstrip(",;:)")
@@ -137,7 +149,6 @@ def _analyze_with_nfo(app_path: Path) -> str:
                 lines.append(f"  {module}:")
                 for imp in imports[:5]:
                     lines.append(f"    <- {imp}")
-
 
         return "\n".join(lines)
 

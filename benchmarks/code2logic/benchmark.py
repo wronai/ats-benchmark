@@ -48,7 +48,10 @@ def run_benchmark() -> BenchmarkResult:
         # Fallback: try with just the analyzer
         try:
             from code2logic import analyze_project
-            project = analyze_project(str(app_path), use_treesitter=False, verbose=False)
+
+            project = analyze_project(
+                str(app_path), use_treesitter=False, verbose=False
+            )
             # Manual compact output
             lines = []
             for m in project.modules:

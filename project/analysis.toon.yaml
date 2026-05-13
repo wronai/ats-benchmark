@@ -1,0 +1,101 @@
+# code2llm | 34f 3715L | python:33,shell:1 | 2026-04-08
+# CC̄=5.1 | critical:8/126 | dups:0 | cycles:1
+
+HEALTH[8]:
+  🟡 CC    print_comparison_table CC=20 (limit:15)
+  🟡 CC    _run_ast_grep CC=16 (limit:15)
+  🟡 CC    _analyze_with_nfo CC=26 (limit:15)
+  🟡 CC    _context_nfo CC=16 (limit:15)
+  🟡 CC    _auto_detect_problem CC=21 (limit:15)
+  🟡 CC    _analyze_security CC=16 (limit:15)
+  🟡 CC    _fallback_security_analysis CC=20 (limit:15)
+  🟡 CC    _analyze_complexity CC=28 (limit:15)
+
+REFACTOR[2]:
+  1. split 8 high-CC methods  (CC>15)
+  2. break 1 circular dependencies
+
+PIPELINES[57]:
+  [1] Src [main]: main → load_results
+      PURITY: 100% pure
+  [2] Src [run_benchmark]: run_benchmark → get_target_project → get_sample_app_path
+      PURITY: 100% pure
+  [3] Src [to_dict]: to_dict
+      PURITY: 100% pure
+  [4] Src [to_dict]: to_dict
+      PURITY: 100% pure
+  [5] Src [run_benchmark]: run_benchmark → get_target_project → get_sample_app_path
+      PURITY: 100% pure
+
+LAYERS:
+  ./                              CC̄=7.7    ←in:0  →out:0
+  │ !! analyze_results            273L  0C    7m  CC=20     ←0
+  │ check_llm                   23L  0C    0m  CC=0.0    ←0
+  │ project.sh                   2L  0C    0m  CC=0.0    ←0
+  │
+  benchmarks/                     CC̄=6.3    ←in:45  →out:0
+  │ common                     492L  2C   17m  CC=14     ←8
+  │ !! benchmark                  327L  0C    7m  CC=28     ←0
+  │ !! benchmark                  317L  0C    6m  CC=16     ←0
+  │ !! repair_pipeline            312L  0C    7m  CC=21     ←0
+  │ !! benchmark                  268L  0C    5m  CC=20     ←0
+  │ benchmark                  231L  0C    5m  CC=10     ←0
+  │ !! benchmark                  213L  0C    3m  CC=26     ←0
+  │ app__log_flow_parser       190L  1C    8m  CC=11     ←0
+  │ benchmark                  116L  0C    1m  CC=11     ←0
+  │ benchmark                   80L  0C    1m  CC=1      ←0
+  │ llm                         69L  0C    1m  CC=8      ←8
+  │ config                      61L  0C    6m  CC=7      ←9
+  │ source                      56L  0C    3m  CC=7      ←8
+  │ models                      55L  2C    2m  CC=3      ←0
+  │ benchmark                   49L  0C    5m  CC=6      ←0
+  │ env                         31L  0C    1m  CC=10     ←0
+  │ app____init__                4L  0C    0m  CC=0.0    ←0
+  │ __init__                     0L  0C    0m  CC=0.0    ←0
+  │ __init__                     0L  0C    0m  CC=0.0    ←0
+  │ __init__                     0L  0C    0m  CC=0.0    ←0
+  │ __init__                     0L  0C    0m  CC=0.0    ←0
+  │ __init__                     0L  0C    0m  CC=0.0    ←0
+  │ __init__                     0L  0C    0m  CC=0.0    ←0
+  │ __init__                     0L  0C    0m  CC=0.0    ←0
+  │ __init__                     0L  0C    0m  CC=0.0    ←0
+  │ __init__                     0L  0C    0m  CC=0.0    ←0
+  │ __init__                     0L  0C    0m  CC=0.0    ←0
+  │
+  sample-app/                     CC̄=2.4    ←in:0  →out:0
+  │ services                   313L  5C   27m  CC=7      ←0
+  │ models                     146L  8C   11m  CC=4      ←0
+  │ main                        87L  0C    3m  CC=2      ←0
+  │ __init__                     0L  0C    0m  CC=0.0    ←0
+  │
+  ── zero ──
+     benchmarks/__init__.py                    0L
+     benchmarks/astgrep/__init__.py            0L
+     benchmarks/bandit/__init__.py             0L
+     benchmarks/baseline/__init__.py           0L
+     benchmarks/callgraph/__init__.py          0L
+     benchmarks/code2logic/__init__.py         0L
+     benchmarks/nfo/__init__.py                0L
+     benchmarks/radon/__init__.py              0L
+     benchmarks/repair/__init__.py             0L
+     benchmarks/treesitter/__init__.py         0L
+     sample-app/__init__.py                    0L
+
+COUPLING:
+                                    benchmarks      benchmarks.repair    benchmarks.baseline     benchmarks.astgrep      benchmarks.bandit  benchmarks.code2logic         benchmarks.nfo       benchmarks.radon  benchmarks.treesitter
+             benchmarks                     ──                     ←9                     ←6                     ←5                     ←5                     ←5                     ←5                     ←5                     ←5  hub
+      benchmarks.repair                      9                     ──                                                                                                                                                                   !! fan-out
+    benchmarks.baseline                      6                                            ──                                                                                                                                          
+     benchmarks.astgrep                      5                                                                   ──                                                                                                                   
+      benchmarks.bandit                      5                                                                                          ──                                                                                            
+  benchmarks.code2logic                      5                                                                                                                 ──                                                                     
+         benchmarks.nfo                      5                                                                                                                                        ──                                              
+       benchmarks.radon                      5                                                                                                                                                               ──                       
+  benchmarks.treesitter                      5                                                                                                                                                                                      ──
+  CYCLES: 1
+  HUB: benchmarks/ (fan-in=45)
+  SMELL: benchmarks.repair/ fan-out=9 → split needed
+
+EXTERNAL:
+  validation: run `vallm batch .` → validation.toon
+  duplication: run `redup scan .` → duplication.toon

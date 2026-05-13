@@ -1,0 +1,28 @@
+[
+  {
+    "project": "ats-benchmark",
+    "decisions": 6,
+    "changes_applied": 3,
+    "errors": 1,
+    "changes_by_type": {
+      "remove_unused_imports": 1,
+      "fix_module_execution_block": 0,
+      "extract_constants": 0,
+      "add_return_types": 0,
+      "extract_method": 0,
+      "simplify_conditionals": 0,
+      "reduce_complexity": 0,
+      "other": 2
+    },
+    "changes": [
+      {
+        "file": "/home/tom/github/semcod/ats-benchmark/benchmarks/nfo/benchmark.py",
+        "action": "remove_unused_imports",
+        "details": "Removed: annotations, json, subprocess, nfo, Logger, JSONSink, LogEntry, import_module, importlib.util"
+      }
+    ],
+    "llm_enabled": true,
+    "before_issues": 85,
+    "after_issues": 85
+  }
+]

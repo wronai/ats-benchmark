@@ -1,0 +1,248 @@
+version: '1'
+name: ats-benchmark
+description: Minimal Taskfile
+variables:
+  APP_NAME: ats-benchmark
+environments:
+  local:
+    container_runtime: docker
+    compose_command: docker compose
+pipeline:
+  python_version: "3.12"
+  runner_image: ubuntu-latest
+  branches: [main]
+  cache: [~/.cache/pip]
+  artifacts: [dist/]
+
+  stages:
+    - name: lint
+      tasks: [lint]
+
+    - name: test
+      tasks: [test]
+
+    - name: build
+      tasks: [build]
+      when: "branch:main"
+
+tasks:
+  up:
+    desc: Start services via docker compose
+    cmds:
+    - docker compose up -d
+  down:
+    desc: Stop services
+    cmds:
+    - docker compose down
+  logs:
+    desc: Tail compose logs
+    cmds:
+    - docker compose logs -f
+  ps:
+    desc: Show running compose services
+    cmds:
+    - docker compose ps
+  help:
+    desc: Show available tasks
+    cmds:
+    - echo "ats-benchmark — available tasks:"
+    - echo ""
+    - taskfile list
+  setup:
+    desc: '[imported from Makefile] setup'
+    cmds:
+    - if [ -z "$(TARGET)" ]; then \
+    - 'echo "ERROR: TARGET is required. Usage: make setup TARGET=/path/to/project";
+      \'
+    - exit 1; \
+    - fi
+    - if [ ! -d "$(TARGET)" ]; then \
+    - 'echo "ERROR: Directory not found: $(TARGET)"; \'
+    - exit 1; \
+    - fi
+    - if [ ! -f .env ]; then cp .env.example .env; echo "Created .env from .env.example";
+      fi
+    - sed -i 's|^TARGET_PROJECT=.*|TARGET_PROJECT=$(TARGET)|' .env
+    - if [ -n "$(PROBLEM)" ]; then \
+    - sed -i 's|^PROBLEM_DESCRIPTION=.*|PROBLEM_DESCRIPTION=$(PROBLEM)|' .env; \
+    - fi
+    - echo ""
+    - echo "=== Configuration saved to .env ==="
+    - echo "  TARGET_PROJECT=$(TARGET)"
+    - test -n "$(PROBLEM)" && echo "  PROBLEM_DESCRIPTION=$(PROBLEM)" || true
+    - echo ""
+    - echo "Next steps:"
+    - "echo \"  1. Edit .env \u2014 set OPENROUTER_API_KEY=sk-or-v1-...\""
+    - 'echo "  2. make benchmark-all   # Compare compression tools"'
+    - 'echo "  3. make repair          # LLM fixes real problems"'
+    - 'echo "  4. make results         # Show comparison"'
+  env-check:
+    desc: '[imported from Makefile] env-check'
+    cmds:
+    - 'test -f .env || (echo "ERROR: .env not found. Run: make setup TARGET=/path/to/project"
+      && exit 1)'
+    - 'grep -q "OPENROUTER_API_KEY=sk-or-v" .env || echo "WARNING: OPENROUTER_API_KEY
+      may not be set"'
+    - 'grep -Eq "^TARGET_PROJECT=.+" .env || echo "WARNING: TARGET_PROJECT not set.
+      Run: make setup TARGET=./test-broken-code"'
+    - echo ".env OK"
+  all:
+    desc: '[imported from Makefile] all'
+  build:
+    desc: '[imported from Makefile] build'
+    cmds:
+    - docker compose build
+  check-llm:
+    desc: '[imported from Makefile] check-llm'
+    cmds:
+    - echo "=== LLM connection check (docker) ==="
+    - docker compose run --rm baseline-bench python -c 'import sys; from benchmarks.common
+      import check_llm_connection; result = check_llm_connection(); sys.exit(0 if
+      result.get("success") else 1)'
+  benchmark-all:
+    desc: '[imported from Makefile] benchmark-all'
+    cmds:
+    - echo ""
+    - 'echo "All benchmarks completed. Run: make results"'
+  benchmark-code2logic:
+    desc: '[imported from Makefile] benchmark-code2logic'
+    cmds:
+    - echo "=== code2logic benchmark ==="
+    - docker compose run --rm code2logic-bench
+  benchmark-nfo:
+    desc: '[imported from Makefile] benchmark-nfo'
+    cmds:
+    - echo "=== nfo benchmark ==="
+    - docker compose run --rm nfo-bench
+  benchmark-baseline:
+    desc: '[imported from Makefile] benchmark-baseline'
+    cmds:
+    - echo "=== baseline benchmark ==="
+    - docker compose run --rm baseline-bench
+  benchmark-callgraph:
+    desc: '[imported from Makefile] benchmark-callgraph'
+    cmds:
+    - echo "=== callgraph benchmark ==="
+    - docker compose run --rm callgraph-bench
+  benchmark-treesitter:
+    desc: '[imported from Makefile] benchmark-treesitter'
+    cmds:
+    - echo "=== treesitter benchmark ==="
+    - docker compose run --rm treesitter-bench
+  benchmark-astgrep:
+    desc: '[imported from Makefile] benchmark-astgrep'
+    cmds:
+    - echo "=== astgrep benchmark ==="
+    - docker compose run --rm astgrep-bench
+  benchmark-radon:
+    desc: '[imported from Makefile] benchmark-radon'
+    cmds:
+    - echo "=== radon benchmark ==="
+    - docker compose run --rm radon-bench
+  benchmark-bandit:
+    desc: '[imported from Makefile] benchmark-bandit'
+    cmds:
+    - echo "=== bandit benchmark ==="
+    - docker compose run --rm bandit-bench
+  repair:
+    desc: '[imported from Makefile] repair'
+    cmds:
+    - echo "=== LLM Repair Pipeline ==="
+    - docker compose run --rm repair-bench --tool all
+  repair-code2logic:
+    desc: '[imported from Makefile] repair-code2logic'
+    cmds:
+    - docker compose run --rm repair-bench --tool code2logic
+  repair-nfo:
+    desc: '[imported from Makefile] repair-nfo'
+    cmds:
+    - docker compose run --rm repair-bench --tool nfo
+  repair-baseline:
+    desc: '[imported from Makefile] repair-baseline'
+    cmds:
+    - docker compose run --rm repair-bench --tool baseline
+  results:
+    desc: '[imported from Makefile] results'
+    cmds:
+    - echo "=== Results ==="
+    - python3 analyze_results.py
+  local-code2logic:
+    desc: '[imported from Makefile] local-code2logic'
+    cmds:
+    - python3 -m benchmarks.code2logic.benchmark
+  local-nfo:
+    desc: '[imported from Makefile] local-nfo'
+    cmds:
+    - python3 -m benchmarks.nfo.benchmark
+  local-baseline:
+    desc: '[imported from Makefile] local-baseline'
+    cmds:
+    - python3 -m benchmarks.baseline.benchmark
+  local-callgraph:
+    desc: '[imported from Makefile] local-callgraph'
+    cmds:
+    - python3 -m benchmarks.callgraph.benchmark
+  local-treesitter:
+    desc: '[imported from Makefile] local-treesitter'
+    cmds:
+    - python3 -m benchmarks.treesitter.benchmark
+  local-astgrep:
+    desc: '[imported from Makefile] local-astgrep'
+    cmds:
+    - python3 -m benchmarks.astgrep.benchmark
+  local-radon:
+    desc: '[imported from Makefile] local-radon'
+    cmds:
+    - python3 -m benchmarks.radon.benchmark
+  local-bandit:
+    desc: '[imported from Makefile] local-bandit'
+    cmds:
+    - python3 -m benchmarks.bandit.benchmark
+  local-repair:
+    desc: '[imported from Makefile] local-repair'
+    cmds:
+    - python3 -m benchmarks.repair.repair_pipeline --tool all
+  local-repair-code2logic:
+    desc: '[imported from Makefile] local-repair-code2logic'
+    cmds:
+    - python3 -m benchmarks.repair.repair_pipeline --tool code2logic
+  local-all:
+    desc: '[imported from Makefile] local-all'
+  clean:
+    desc: '[imported from Makefile] clean'
+    cmds:
+    - rm -f benchmarks/*/results.json
+    - rm -f benchmarks/*/repair_result.json
+    - rm -rf benchmarks/repair/*/fixes/
+    - rm -f benchmarks/*/runtime_logs.jsonl
+    - rm -f benchmark_summary.json
+    - docker compose down --rmi local --volumes 2>/dev/null || true
+  import-makefile-hint:
+    desc: '[from doql] workflow: import-makefile-hint'
+    cmds:
+    - 'echo ''Run: taskfile import Makefile to import existing targets.'''
+  health:
+    desc: '[from doql] workflow: health'
+    cmds:
+    - docker compose ps
+    - echo "Health check"
+  fmt:
+    desc: Auto-format with ruff
+    cmds:
+    - ruff format .
+  install:
+    desc: Install Python dependencies (editable)
+    cmds:
+    - pip install -e .[dev]
+  lint:
+    desc: Run ruff lint check
+    cmds:
+    - ruff check .
+  test:
+    desc: Run pytest suite
+    cmds:
+    - pytest -q
+  format:
+    desc: Auto-format with ruff (alias of fmt)
+    cmds:
+    - ruff format .

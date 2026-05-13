@@ -1,0 +1,45 @@
+def main_function(param1: int, param2: str) -> None:
+    try:
+        result = perform_initial_calculation(param1)
+        log_result(result)
+        processed_data = process_data(param2)
+        log_processed_data(processed_data)
+        final_result = finalize_result(result, processed_data)
+        log_final_result(final_result)
+    except Exception as e:
+        handle_error(e)
+
+
+def perform_initial_calculation(param: int) -> int:
+    # Perform some initial calculations
+    return param * 2
+
+
+def process_data(data: str) -> list:
+    # Process the input data
+    return data.split(',')
+
+
+def finalize_result(initial: int, processed: list) -> dict:
+    # Finalize the result based on initial calculations and processed data
+    return {'initial': initial, 'processed': processed}
+
+
+def log_result(result: int) -> None:
+    # Log the result of the initial calculation
+    print(f"Initial result: {result}")
+
+
+def log_processed_data(data: list) -> None:
+    # Log the processed data
+    print(f"Processed data: {data}")
+
+
+def log_final_result(result: dict) -> None:
+    # Log the final result
+    print(f"Final result: {result}")
+
+
+def handle_error(error: Exception) -> None:
+    # Handle errors appropriately
+    print(f"An error occurred: {error}")

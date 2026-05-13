@@ -1,0 +1,20 @@
+def perform_initial_calculation(param: int) -> int:
+    return param * 2
+
+def process_data(data: str) -> list:
+    return data.split(',')
+
+def main_function(param1: int, param2: str) -> None:
+    try:
+        result = perform_initial_calculation(param1)
+        log_result(result)
+        processed_data = process_input_data(param2)
+        log_processed_data(processed_data)
+        final_result = finalize_result(result, processed_data)
+        log_final_result(final_result)
+    except Exception as e:
+        handle_error(e)
+
+
+def process_input_data(data: str) -> list:
+    return process_data(data)

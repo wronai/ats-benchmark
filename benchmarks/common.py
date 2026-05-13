@@ -4,12 +4,11 @@ from __future__ import annotations
 
 import json
 import os
-import sys
 import time
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 import litellm
 
@@ -22,6 +21,7 @@ litellm.set_verbose = False
 # ---------------------------------------------------------------------------
 # .env loading
 # ---------------------------------------------------------------------------
+
 
 def _load_env() -> None:
     """Load .env from workspace root (works in Docker and locally)."""
@@ -37,6 +37,7 @@ def _load_env() -> None:
                     os.environ[key] = val
             break
 
+
 _load_env()
 
 
@@ -44,9 +45,11 @@ _load_env()
 # Data classes
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class BenchmarkResult:
     """Single benchmark run result."""
+
     tool: str
     target_project: str = ""
     tokens_in: int = 0
@@ -72,6 +75,7 @@ class BenchmarkResult:
 @dataclass
 class RepairResult:
     """Result of an LLM repair attempt."""
+
     tool: str
     target_project: str
     problem: str
@@ -94,6 +98,7 @@ class RepairResult:
 # ---------------------------------------------------------------------------
 # Config helpers
 # ---------------------------------------------------------------------------
+
 
 def get_model() -> str:
     """Get LLM model ID in format provider/model."""
@@ -157,7 +162,19 @@ def get_sample_app_path() -> Path:
 # Source reading
 # ---------------------------------------------------------------------------
 
-SOURCE_EXTENSIONS = {".py", ".js", ".ts", ".go", ".rs", ".java", ".rb", ".php", ".c", ".cpp", ".h"}
+SOURCE_EXTENSIONS = {
+    ".py",
+    ".js",
+    ".ts",
+    ".go",
+    ".rs",
+    ".java",
+    ".rb",
+    ".php",
+    ".c",
+    ".cpp",
+    ".h",
+}
 
 
 def read_all_source_files(app_path: Path, max_chars: int = 0) -> str:
@@ -169,10 +186,23 @@ def read_all_source_files(app_path: Path, max_chars: int = 0) -> str:
             continue
         if src_file.suffix.lower() not in SOURCE_EXTENSIONS:
             continue
-        if any(part.startswith(".") or part in (
-            "node_modules", "__pycache__", "venv", ".venv", "dist", "build",
-            ".git", ".idea", ".tox", ".mypy_cache",
-        ) for part in src_file.parts):
+        if any(
+            part.startswith(".")
+            or part
+            in (
+                "node_modules",
+                "__pycache__",
+                "venv",
+                ".venv",
+                "dist",
+                "build",
+                ".git",
+                ".idea",
+                ".tox",
+                ".mypy_cache",
+            )
+            for part in src_file.parts
+        ):
             continue
         content = src_file.read_text(encoding="utf-8", errors="ignore")
         rel = src_file.relative_to(app_path)
@@ -189,9 +219,19 @@ def count_raw_code_chars(app_path: Path) -> int:
     total = 0
     for src_file in app_path.rglob("*"):
         if src_file.is_file() and src_file.suffix.lower() in SOURCE_EXTENSIONS:
-            if not any(part.startswith(".") or part in (
-                "node_modules", "__pycache__", "venv", ".venv", "dist", "build",
-            ) for part in src_file.parts):
+            if not any(
+                part.startswith(".")
+                or part
+                in (
+                    "node_modules",
+                    "__pycache__",
+                    "venv",
+                    ".venv",
+                    "dist",
+                    "build",
+                )
+                for part in src_file.parts
+            ):
                 total += len(src_file.read_text(encoding="utf-8", errors="ignore"))
     return total
 
@@ -199,6 +239,7 @@ def count_raw_code_chars(app_path: Path) -> int:
 # ---------------------------------------------------------------------------
 # LLM call
 # ---------------------------------------------------------------------------
+
 
 def call_llm(prompt: str, system: str = "", max_tokens: int = 0) -> Dict[str, Any]:
     """Call LLM via litellm with OpenRouter and return response + metrics."""
@@ -263,13 +304,13 @@ def check_llm_connection() -> Dict[str, Any]:
     print("=== LLM Connection Test ===", flush=True)
     model = get_model()
     print(f"  Model: {model}")
-    
+
     api_key = os.getenv("OPENROUTER_API_KEY", "")
     if not api_key:
         return {"success": False, "error": "OPENROUTER_API_KEY is not set in .env"}
-    
+
     print(f"  API Key: {api_key[:10]}...{api_key[-5:] if len(api_key) > 15 else ''}")
-    
+
     test_prompt = "Respond with exactly one word: 'OK'"
     start = time.time()
     try:
@@ -295,13 +336,13 @@ def check_llm_connection() -> Dict[str, Any]:
             "model": model,
             "response_preview": content[:80],
         }
-            
+
     except Exception as e:
         duration = time.time() - start
         error_msg = str(e)
         print(f"  Status: ERROR ({duration:.2f}s)")
         print(f"  Error Detail: {error_msg}")
-        
+
         # Detailed diagnostics
         diag = []
         if "Authentication" in error_msg or "401" in error_msg:
@@ -310,12 +351,12 @@ def check_llm_connection() -> Dict[str, Any]:
             diag.append("Check your internet connection or if the model ID is correct.")
         if "429" in error_msg or "limit" in error_msg.lower():
             diag.append("Rate limit exceeded or insufficient credits.")
-            
+
         if diag:
             print("\n  Recommended Fixes:")
             for d in diag:
                 print(f"  - {d}")
-                
+
         return {"success": False, "error": error_msg, "diagnostics": diag}
 
 
@@ -323,16 +364,40 @@ def check_llm_connection() -> Dict[str, Any]:
 # Quality evaluation
 # ---------------------------------------------------------------------------
 
+
 def evaluate_response_quality(response: str) -> int:
     """Simple quality score: count relevant analysis keywords in response."""
     keywords = [
-        "bug", "error", "issue", "fix", "refactor", "improve",
-        "vulnerability", "performance", "complexity", "dependency",
-        "coupling", "cohesion", "pattern", "anti-pattern",
-        "data flow", "call graph", "entry point", "dead code",
-        "type", "validation", "exception", "race condition",
-        "security", "injection", "memory", "leak",
-        "function", "class", "method", "module",
+        "bug",
+        "error",
+        "issue",
+        "fix",
+        "refactor",
+        "improve",
+        "vulnerability",
+        "performance",
+        "complexity",
+        "dependency",
+        "coupling",
+        "cohesion",
+        "pattern",
+        "anti-pattern",
+        "data flow",
+        "call graph",
+        "entry point",
+        "dead code",
+        "type",
+        "validation",
+        "exception",
+        "race condition",
+        "security",
+        "injection",
+        "memory",
+        "leak",
+        "function",
+        "class",
+        "method",
+        "module",
     ]
     response_lower = response.lower()
     return sum(1 for kw in keywords if kw in response_lower)
@@ -341,6 +406,7 @@ def evaluate_response_quality(response: str) -> int:
 # ---------------------------------------------------------------------------
 # Result persistence
 # ---------------------------------------------------------------------------
+
 
 def save_result(result: BenchmarkResult, output_dir: Path) -> None:
     """Save benchmark result to JSON file."""
@@ -351,7 +417,9 @@ def save_result(result: BenchmarkResult, output_dir: Path) -> None:
     print(f"[{result.tool}] Results saved to {output_file}")
     print(f"  target={result.target_project}")
     print(f"  tokens_in={result.tokens_in}, tokens_out={result.tokens_out}")
-    print(f"  context_chars={result.context_chars}, compression={result.compression_ratio:.1%}")
+    print(
+        f"  context_chars={result.context_chars}, compression={result.compression_ratio:.1%}"
+    )
     print(f"  duration_total={result.duration_total_sec:.2f}s")
     if result.error:
         print(f"  ERROR: {result.error}")
@@ -377,7 +445,9 @@ def save_llm_artifacts(
     (llm_dir / "system.txt").write_text(system_prompt or "", encoding="utf-8")
     (llm_dir / "input.txt").write_text(prompt or "", encoding="utf-8")
     (llm_dir / "context.txt").write_text(context or "", encoding="utf-8")
-    (llm_dir / "output.txt").write_text((llm_result or {}).get("response", "") or "", encoding="utf-8")
+    (llm_dir / "output.txt").write_text(
+        (llm_result or {}).get("response", "") or "", encoding="utf-8"
+    )
 
     error_msg = (llm_result or {}).get("error")
     if error_msg:

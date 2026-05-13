@@ -1,0 +1,289 @@
+app {
+  name: "Untitled";
+  version: "1.0.9";
+}
+
+interface[type="web"] {
+  type: spa;
+  framework: static;
+}
+
+workflow[name="setup"] {
+  trigger: "manual";
+  step-1: run cmd=if [ -z "$(TARGET)" ]; then \;
+  step-2: run cmd=echo "ERROR: TARGET is required. Usage: make setup TARGET=/path/to/project"; \;
+  step-3: run cmd=exit 1; \;
+  step-4: run cmd=fi;
+  step-5: run cmd=if [ ! -d "$(TARGET)" ]; then \;
+  step-6: run cmd=echo "ERROR: Directory not found: $(TARGET)"; \;
+  step-7: run cmd=exit 1; \;
+  step-8: run cmd=fi;
+  step-9: run cmd=if [ ! -f .env ]; then cp .env.example .env; echo "Created .env from .env.example"; fi;
+  step-10: run cmd=sed -i 's|^TARGET_PROJECT=.*|TARGET_PROJECT=$(TARGET)|' .env;
+  step-11: run cmd=if [ -n "$(PROBLEM)" ]; then \;
+  step-12: run cmd=sed -i 's|^PROBLEM_DESCRIPTION=.*|PROBLEM_DESCRIPTION=$(PROBLEM)|' .env; \;
+  step-13: run cmd=fi;
+  step-14: run cmd=echo "";
+  step-15: run cmd=echo "=== Configuration saved to .env ===";
+  step-16: run cmd=echo "  TARGET_PROJECT=$(TARGET)";
+  step-17: run cmd=test -n "$(PROBLEM)" && echo "  PROBLEM_DESCRIPTION=$(PROBLEM)" || true;
+  step-18: run cmd=echo "";
+  step-19: run cmd=echo "Next steps:";
+  step-20: run cmd=echo "  1. Edit .env — set OPENROUTER_API_KEY=sk-or-v1-...";
+  step-21: run cmd=echo "  2. make benchmark-all   # Compare compression tools";
+  step-22: run cmd=echo "  3. make repair          # LLM fixes real problems";
+  step-23: run cmd=echo "  4. make results         # Show comparison";
+}
+
+workflow[name="env-check"] {
+  trigger: "manual";
+  step-1: run cmd=test -f .env || (echo "ERROR: .env not found. Run: make setup TARGET=/path/to/project" && exit 1);
+  step-2: run cmd=grep -q "OPENROUTER_API_KEY=sk-or-v" .env || echo "WARNING: OPENROUTER_API_KEY may not be set";
+  step-3: run cmd=grep -Eq "^TARGET_PROJECT=.+" .env || echo "WARNING: TARGET_PROJECT not set. Run: make setup TARGET=./test-broken-code";
+  step-4: run cmd=echo ".env OK";
+}
+
+workflow[name="build"] {
+  trigger: "manual";
+  step-1: run cmd=docker compose build;
+}
+
+workflow[name="check-llm"] {
+  trigger: "manual";
+  step-1: run cmd=echo "=== LLM connection check (docker) ===";
+  step-2: run cmd=docker compose run --rm baseline-bench python -c 'import sys; from benchmarks.common import check_llm_connection; result = check_llm_connection(); sys.exit(0 if result.get("success") else 1)';
+}
+
+workflow[name="benchmark-all"] {
+  trigger: "manual";
+  step-1: run cmd=echo "";
+  step-2: run cmd=echo "All benchmarks completed. Run: make results";
+}
+
+workflow[name="benchmark-code2logic"] {
+  trigger: "manual";
+  step-1: run cmd=echo "=== code2logic benchmark ===";
+  step-2: run cmd=docker compose run --rm code2logic-bench;
+}
+
+workflow[name="benchmark-nfo"] {
+  trigger: "manual";
+  step-1: run cmd=echo "=== nfo benchmark ===";
+  step-2: run cmd=docker compose run --rm nfo-bench;
+}
+
+workflow[name="benchmark-baseline"] {
+  trigger: "manual";
+  step-1: run cmd=echo "=== baseline benchmark ===";
+  step-2: run cmd=docker compose run --rm baseline-bench;
+}
+
+workflow[name="benchmark-callgraph"] {
+  trigger: "manual";
+  step-1: run cmd=echo "=== callgraph benchmark ===";
+  step-2: run cmd=docker compose run --rm callgraph-bench;
+}
+
+workflow[name="benchmark-treesitter"] {
+  trigger: "manual";
+  step-1: run cmd=echo "=== treesitter benchmark ===";
+  step-2: run cmd=docker compose run --rm treesitter-bench;
+}
+
+workflow[name="benchmark-astgrep"] {
+  trigger: "manual";
+  step-1: run cmd=echo "=== astgrep benchmark ===";
+  step-2: run cmd=docker compose run --rm astgrep-bench;
+}
+
+workflow[name="benchmark-radon"] {
+  trigger: "manual";
+  step-1: run cmd=echo "=== radon benchmark ===";
+  step-2: run cmd=docker compose run --rm radon-bench;
+}
+
+workflow[name="benchmark-bandit"] {
+  trigger: "manual";
+  step-1: run cmd=echo "=== bandit benchmark ===";
+  step-2: run cmd=docker compose run --rm bandit-bench;
+}
+
+workflow[name="repair"] {
+  trigger: "manual";
+  step-1: run cmd=echo "=== LLM Repair Pipeline ===";
+  step-2: run cmd=docker compose run --rm repair-bench --tool all;
+}
+
+workflow[name="repair-code2logic"] {
+  trigger: "manual";
+  step-1: run cmd=docker compose run --rm repair-bench --tool code2logic;
+}
+
+workflow[name="repair-nfo"] {
+  trigger: "manual";
+  step-1: run cmd=docker compose run --rm repair-bench --tool nfo;
+}
+
+workflow[name="repair-baseline"] {
+  trigger: "manual";
+  step-1: run cmd=docker compose run --rm repair-bench --tool baseline;
+}
+
+workflow[name="results"] {
+  trigger: "manual";
+  step-1: run cmd=echo "=== Results ===";
+  step-2: run cmd=python3 analyze_results.py;
+}
+
+workflow[name="local-code2logic"] {
+  trigger: "manual";
+  step-1: run cmd=python3 -m benchmarks.code2logic.benchmark;
+}
+
+workflow[name="local-nfo"] {
+  trigger: "manual";
+  step-1: run cmd=python3 -m benchmarks.nfo.benchmark;
+}
+
+workflow[name="local-baseline"] {
+  trigger: "manual";
+  step-1: run cmd=python3 -m benchmarks.baseline.benchmark;
+}
+
+workflow[name="local-callgraph"] {
+  trigger: "manual";
+  step-1: run cmd=python3 -m benchmarks.callgraph.benchmark;
+}
+
+workflow[name="local-treesitter"] {
+  trigger: "manual";
+  step-1: run cmd=python3 -m benchmarks.treesitter.benchmark;
+}
+
+workflow[name="local-astgrep"] {
+  trigger: "manual";
+  step-1: run cmd=python3 -m benchmarks.astgrep.benchmark;
+}
+
+workflow[name="local-radon"] {
+  trigger: "manual";
+  step-1: run cmd=python3 -m benchmarks.radon.benchmark;
+}
+
+workflow[name="local-bandit"] {
+  trigger: "manual";
+  step-1: run cmd=python3 -m benchmarks.bandit.benchmark;
+}
+
+workflow[name="local-repair"] {
+  trigger: "manual";
+  step-1: run cmd=python3 -m benchmarks.repair.repair_pipeline --tool all;
+}
+
+workflow[name="local-repair-code2logic"] {
+  trigger: "manual";
+  step-1: run cmd=python3 -m benchmarks.repair.repair_pipeline --tool code2logic;
+}
+
+workflow[name="local-all"] {
+  trigger: "manual";
+  step-1: depend target=local-code2logic;
+  step-2: depend target=local-nfo;
+  step-3: depend target=local-baseline;
+  step-4: depend target=local-callgraph;
+  step-5: depend target=local-treesitter;
+  step-6: depend target=local-astgrep;
+  step-7: depend target=local-radon;
+  step-8: depend target=local-bandit;
+  step-9: depend target=results;
+}
+
+workflow[name="clean"] {
+  trigger: "manual";
+  step-1: run cmd=rm -f benchmarks/*/results.json;
+  step-2: run cmd=rm -f benchmarks/*/repair_result.json;
+  step-3: run cmd=rm -rf benchmarks/repair/*/fixes/;
+  step-4: run cmd=rm -f benchmarks/*/runtime_logs.jsonl;
+  step-5: run cmd=rm -f benchmark_summary.json;
+  step-6: run cmd=docker compose down --rmi local --volumes 2>/dev/null || true;
+}
+
+workflow[name="up"] {
+  trigger: "manual";
+  step-1: run cmd=docker compose up -d;
+}
+
+workflow[name="down"] {
+  trigger: "manual";
+  step-1: run cmd=docker compose down;
+}
+
+workflow[name="logs"] {
+  trigger: "manual";
+  step-1: run cmd=docker compose logs -f;
+}
+
+workflow[name="ps"] {
+  trigger: "manual";
+  step-1: run cmd=docker compose ps;
+}
+
+workflow[name="import-makefile-hint"] {
+  trigger: "manual";
+  step-1: run cmd=echo 'Run: taskfile import Makefile to import existing targets.';
+}
+
+workflow[name="health"] {
+  trigger: "manual";
+  step-1: run cmd=docker compose ps;
+  step-2: run cmd=echo "Health check";
+}
+
+workflow[name="all"] {
+  trigger: "manual";
+  step-1: run cmd=echo "Running all...";
+}
+
+workflow[name="help"] {
+  trigger: "manual";
+  step-1: run cmd=grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS =;
+  step-2: run cmd=##; 
+  step-3: run cmd=Show;
+  step-4: run cmd=this;
+  step-5: run cmd=help;
+}
+
+deploy {
+  target: docker-compose;
+  compose_file: docker-compose.yml;
+}
+
+environment[name="local"] {
+  runtime: docker-compose;
+  env_file: ".env";
+}
+
+workflow[name="install"] {
+  trigger: "manual";
+  step-1: run cmd=pip install -e ".[dev]";
+}
+
+workflow[name="lint"] {
+  trigger: "manual";
+  step-1: run cmd=ruff check .;
+}
+
+workflow[name="test"] {
+  trigger: "manual";
+  step-1: run cmd=pytest -q;
+}
+
+workflow[name="fmt"] {
+  trigger: "manual";
+  step-1: run cmd=ruff format .;
+}
+
+workflow[name="format"] {
+  trigger: "manual";
+  step-1: run cmd=ruff format .;
+}
